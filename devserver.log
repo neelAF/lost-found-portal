@@ -1,0 +1,16 @@
+
+> lost-found-portal@0.1.0 dev
+> next dev
+
+⚠ Port 3000 is in use by process 17876, using available port 3001 instead.
+▲ Next.js 16.2.0 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.29.207:3001
+- Environments: .env.local
+✓ Ready in 1730ms
+Creating turbopack project {
+  dir: 'C:\\Users\\leoto\\OneDrive\\Desktop\\neel_project02\\lost-found-portal',
+  testMode: true
+}
+
+^C^C
