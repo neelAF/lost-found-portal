@@ -348,27 +348,32 @@ html:not(.dark) .navbar-glass .btn-success:not(:disabled):hover {
   isolation: isolate;
   overflow: visible;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.30), rgba(255, 255, 255, 0.12) 42%, rgba(99, 102, 241, 0.13)),
-    radial-gradient(circle at 14% 0%, rgba(34, 211, 238, 0.20), transparent 38%),
-    radial-gradient(circle at 92% 10%, rgba(168, 85, 247, 0.20), transparent 42%),
-    var(--navbar-bg);
+    linear-gradient(145deg, color-mix(in srgb, var(--surface-strong) 92%, transparent), color-mix(in srgb, var(--surface) 88%, transparent) 48%, color-mix(in srgb, var(--accent) 10%, var(--surface-strong))),
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 34%),
+    radial-gradient(circle at 92% 10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 38%);
   box-shadow:
-    0 34px 90px -42px var(--navbar-shadow),
-    0 22px 52px -34px var(--shadow),
-    0 0 0 1px color-mix(in srgb, var(--glass-highlight) 36%, transparent),
+    0 30px 72px -42px var(--navbar-shadow),
+    0 18px 42px -32px var(--shadow),
+    0 0 0 1px color-mix(in srgb, var(--glass-highlight) 42%, transparent),
     inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 82%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--primary) 22%, transparent),
-    inset 0 0 28px color-mix(in srgb, var(--primary) 10%, transparent);
-  backdrop-filter: blur(26px) saturate(158%) brightness(108%);
-  -webkit-backdrop-filter: blur(26px) saturate(158%) brightness(108%);
+    inset 0 0 22px color-mix(in srgb, var(--primary) 8%, transparent);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   transition:
     opacity 240ms cubic-bezier(0.16, 1, 0.3, 1),
     transform 300ms cubic-bezier(0.18, 1.22, 0.32, 1) !important;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.navbar-glass .mobile-menu-panel-open {
+  transform: none !important;
 }
 
 .navbar-glass .mobile-menu-panel::before {
   position: absolute;
-  inset: -22px -18px -18px;
+  inset: -16px -10px -14px;
   z-index: -1;
   border-radius: 2rem;
   background:
@@ -376,8 +381,8 @@ html:not(.dark) .navbar-glass .btn-success:not(:disabled):hover {
     radial-gradient(circle at 24% 28%, rgba(34, 211, 238, 0.26), transparent 44%),
     radial-gradient(circle at 70% 78%, rgba(236, 72, 153, 0.18), transparent 48%);
   content: "";
-  filter: blur(16px);
-  opacity: 0.84;
+  filter: blur(10px);
+  opacity: 0.46;
   pointer-events: none;
 }
 
@@ -387,8 +392,8 @@ html:not(.dark) .navbar-glass .btn-success:not(:disabled):hover {
   z-index: 0;
   border-radius: calc(1.75rem - 1px);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.20), transparent 52%),
-    radial-gradient(circle at 18% 16%, rgba(255, 255, 255, 0.18), transparent 30%);
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 18%, transparent), transparent 42%),
+    color-mix(in srgb, var(--surface-strong) 42%, transparent);
   content: "";
   pointer-events: none;
 }
@@ -396,6 +401,12 @@ html:not(.dark) .navbar-glass .btn-success:not(:disabled):hover {
 .navbar-glass .mobile-menu-trigger {
   position: relative;
   overflow: hidden;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-color: color-mix(in srgb, var(--glass-navbar-border) 58%, transparent) !important;
+  box-shadow:
+    0 12px 28px -22px var(--shadow),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 78%, transparent);
 }
 
 .navbar-glass .mobile-menu-trigger::before {
@@ -416,6 +427,7 @@ html:not(.dark) .navbar-glass .btn-success:not(:disabled):hover {
 
 .navbar-glass .mobile-menu-trigger-line {
   transform-origin: center;
+  backface-visibility: hidden;
   transition:
     transform 320ms cubic-bezier(0.18, 1.35, 0.34, 1),
     opacity 180ms ease-out !important;
@@ -425,21 +437,33 @@ html:not(.dark) .navbar-glass .btn-success:not(:disabled):hover {
   position: relative;
   isolation: isolate;
   overflow: hidden;
+  min-height: 3rem;
+  line-height: 1.2;
+  white-space: nowrap;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.23), rgba(255, 255, 255, 0.08)),
-    color-mix(in srgb, var(--glass-navbar-item) 82%, transparent);
-  border-color: color-mix(in srgb, var(--glass-navbar-border) 54%, transparent);
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-strong) 88%, transparent), color-mix(in srgb, var(--surface) 82%, transparent)),
+    color-mix(in srgb, var(--glass-navbar-item) 42%, var(--surface-strong));
+  border-color: color-mix(in srgb, var(--glass-navbar-border) 62%, transparent) !important;
+  color: var(--text) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   box-shadow:
-    0 16px 34px -26px var(--shadow),
-    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 78%, transparent);
+    0 14px 28px -24px var(--shadow),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
   opacity: 0;
-  transform: translateY(-6px) scale(0.98);
-  animation: mobile-menu-item-in 360ms cubic-bezier(0.18, 1.18, 0.32, 1) forwards !important;
+  transform: translateY(-6px);
   transition:
     transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
     border-color 180ms ease-out,
     box-shadow 180ms ease-out,
     background 180ms ease-out !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.navbar-glass .mobile-menu-item>span {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .navbar-glass .mobile-menu-item::before {
@@ -448,27 +472,63 @@ html:not(.dark) .navbar-glass .btn-success:not(:disabled):hover {
   z-index: 0;
   border-radius: inherit;
   background:
-    linear-gradient(135deg, rgba(34, 211, 238, 0.18), transparent 48%, rgba(168, 85, 247, 0.18)),
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.20), transparent 42%);
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, transparent), transparent 48%, color-mix(in srgb, var(--accent) 10%, transparent)),
+    radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--glass-highlight) 18%, transparent), transparent 42%);
   content: "";
   opacity: 0;
   transition: opacity 180ms ease-out !important;
 }
 
+.navbar-glass .mobile-menu-panel-open .mobile-menu-item {
+  animation: mobile-menu-item-in 280ms cubic-bezier(0.18, 1.08, 0.32, 1) forwards !important;
+}
+
+.navbar-glass .mobile-menu-panel-closed .mobile-menu-item {
+  animation: none !important;
+}
+
+html:not(.dark) .navbar-glass .mobile-menu-panel {
+  background:
+    linear-gradient(145deg, rgba(248, 250, 252, 0.96), rgba(226, 232, 240, 0.92) 48%, rgba(224, 231, 255, 0.94)),
+    radial-gradient(circle at 14% 0%, rgba(14, 165, 233, 0.10), transparent 34%),
+    radial-gradient(circle at 92% 10%, rgba(99, 102, 241, 0.10), transparent 38%);
+}
+
+html:not(.dark) .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent) {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.88), rgba(241, 245, 249, 0.84)) !important;
+  border-color: rgba(100, 116, 139, 0.18) !important;
+  color: #0f172a !important;
+}
+
+.dark .navbar-glass .mobile-menu-panel,
+html[data-theme="dark"] .navbar-glass .mobile-menu-panel {
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(30, 41, 59, 0.90) 48%, rgba(49, 46, 129, 0.66)),
+    radial-gradient(circle at 14% 0%, rgba(56, 189, 248, 0.12), transparent 34%),
+    radial-gradient(circle at 92% 10%, rgba(129, 140, 248, 0.14), transparent 38%);
+}
+
+.dark .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent),
+html[data-theme="dark"] .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent) {
+  background:
+    linear-gradient(135deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.84)) !important;
+  border-color: rgba(226, 232, 240, 0.16) !important;
+  color: #f8fafc !important;
+}
+
 .navbar-glass .mobile-menu-item-accent.btn-success {
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--success) 92%, #ffffff), var(--success-strong)),
-    color-mix(in srgb, var(--glass-navbar-item) 52%, transparent);
-  border-color: color-mix(in srgb, var(--success) 52%, var(--glass-navbar-border));
-  color: var(--on-accent);
+    linear-gradient(135deg, color-mix(in srgb, var(--success) 94%, #ffffff), var(--success-strong)) !important;
+  border-color: color-mix(in srgb, var(--success) 58%, var(--glass-navbar-border)) !important;
+  color: #ffffff !important;
 }
 
 .navbar-glass .mobile-menu-item-accent.btn-primary {
   background:
-    linear-gradient(135deg, color-mix(in srgb, var(--primary) 90%, #ffffff), var(--accent)),
-    color-mix(in srgb, var(--glass-navbar-item) 52%, transparent);
-  border-color: color-mix(in srgb, var(--primary) 52%, var(--glass-navbar-border));
-  color: var(--on-accent);
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 92%, #ffffff), var(--accent)) !important;
+  border-color: color-mix(in srgb, var(--primary) 58%, var(--glass-navbar-border)) !important;
+  color: #ffffff !important;
 }
 
 html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-success {
@@ -496,19 +556,24 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary {
 .navbar-glass .mobile-menu-item:hover,
 .navbar-glass .mobile-menu-item:focus-visible,
 .navbar-glass .mobile-menu-item:active {
-  border-color: color-mix(in srgb, var(--glass-navbar-border) 76%, var(--primary));
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, var(--surface-strong)), color-mix(in srgb, var(--accent) 14%, var(--surface))) !important;
+  border-color: color-mix(in srgb, var(--primary) 64%, var(--glass-navbar-border)) !important;
   box-shadow:
-    0 20px 42px -24px var(--shadow-elevated),
-    0 0 0 1px color-mix(in srgb, var(--primary) 22%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 88%, transparent);
-  transform: translateY(-2px) scale(1.01) !important;
+    0 20px 44px -24px color-mix(in srgb, var(--primary) 42%, var(--shadow-elevated)),
+    0 0 0 1px color-mix(in srgb, var(--primary) 34%, transparent),
+    0 0 30px -18px color-mix(in srgb, var(--accent) 50%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 92%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--primary) 20%, transparent) !important;
+  filter: none !important;
+  transform: none !important;
 }
 
 .navbar-glass .mobile-menu-item:hover::before,
 .navbar-glass .mobile-menu-item:focus-visible::before,
 .navbar-glass .mobile-menu-item:active::before,
 .navbar-glass .mobile-menu-item-accent::before {
-  opacity: 0.42;
+  opacity: 0.68;
 }
 
 .navbar-glass .mobile-menu-item:nth-child(1) {
@@ -530,7 +595,7 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary {
 @keyframes mobile-menu-item-in {
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: none;
   }
 }
 
@@ -1061,6 +1126,65 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent::before {
   opacity: 0.36;
 }
 
+html:not(.dark) .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):hover,
+html:not(.dark) .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):focus-visible,
+html:not(.dark) .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):active {
+  background:
+    linear-gradient(135deg, rgba(224, 242, 254, 0.98), rgba(238, 242, 255, 0.96) 48%, rgba(237, 233, 254, 0.96)) !important;
+  border-color: rgba(59, 130, 246, 0.46) !important;
+  color: #0f172a !important;
+  box-shadow:
+    0 18px 42px -24px rgba(37, 99, 235, 0.42),
+    0 0 0 1px rgba(59, 130, 246, 0.18),
+    0 0 34px -20px rgba(124, 58, 237, 0.46),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82),
+    inset 0 -1px 0 rgba(59, 130, 246, 0.16) !important;
+}
+
+html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-success:hover,
+html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-success:focus-visible,
+html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-success:active {
+  background:
+    linear-gradient(135deg, #10b981 0%, #059669 46%, #047857 100%) !important;
+  border-color: rgba(16, 185, 129, 0.70) !important;
+  box-shadow:
+    0 20px 46px -22px rgba(5, 150, 105, 0.82),
+    0 0 0 1px rgba(16, 185, 129, 0.26),
+    0 0 36px -18px rgba(16, 185, 129, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
+}
+
+html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary:hover,
+html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary:focus-visible,
+html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary:active {
+  background:
+    linear-gradient(135deg, #38bdf8 0%, #2563eb 44%, #7c3aed 100%) !important;
+  border-color: rgba(96, 165, 250, 0.72) !important;
+  box-shadow:
+    0 20px 46px -22px rgba(37, 99, 235, 0.82),
+    0 0 0 1px rgba(96, 165, 250, 0.26),
+    0 0 36px -18px rgba(124, 58, 237, 0.82),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34) !important;
+}
+
+.dark .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):hover,
+.dark .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):focus-visible,
+.dark .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):active,
+html[data-theme="dark"] .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):hover,
+html[data-theme="dark"] .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):focus-visible,
+html[data-theme="dark"] .navbar-glass .mobile-menu-item:not(.mobile-menu-item-accent):active {
+  background:
+    linear-gradient(135deg, rgba(30, 64, 175, 0.54), rgba(49, 46, 129, 0.52) 48%, rgba(88, 28, 135, 0.42)) !important;
+  border-color: rgba(125, 211, 252, 0.36) !important;
+  color: #ffffff !important;
+  box-shadow:
+    0 18px 42px -24px rgba(59, 130, 246, 0.54),
+    0 0 0 1px rgba(125, 211, 252, 0.18),
+    0 0 34px -20px rgba(129, 140, 248, 0.56),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    inset 0 -1px 0 rgba(56, 189, 248, 0.14) !important;
+}
+
 .claim-approve-btn:not(:disabled):hover,
 .claim-approve-btn:not(:disabled):focus-visible {
   background: linear-gradient(135deg, #10b981, #047857);
@@ -1322,6 +1446,13 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent::before {
   transform: translateY(-4px) !important;
 }
 
+.navbar-glass .mobile-menu-item.navbar-action-button:not(:disabled):hover,
+.navbar-glass .mobile-menu-item.navbar-action-button:not(:disabled):focus-visible,
+.navbar-glass .mobile-menu-item.navbar-action-button:not(:disabled):active {
+  transform: none !important;
+  filter: none !important;
+}
+
 .alert-error,
 .alert-success {
   border: 1px solid var(--border);
@@ -1422,7 +1553,12 @@ input[type="file"]::file-selector-button {
 
 html {
   background: var(--background);
+  overscroll-behavior-y: contain;
+  scrollbar-color: color-mix(in srgb, var(--primary) 42%, var(--text-muted)) transparent;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
   scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
   transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 
   /* Prevent hydration mismatch */
@@ -1433,6 +1569,7 @@ html {
 
 body {
   position: relative;
+  -webkit-overflow-scrolling: touch;
   background: var(--background-gradient);
   background-attachment: scroll;
   background-size: 145% 145%;
@@ -1444,6 +1581,35 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   transition: background-color 0.3s ease-in-out, background 0.3s ease-in-out, color 0.3s ease-in-out;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+}
+
+::-webkit-scrollbar {
+  width: 0.7rem;
+  height: 0.7rem;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--primary) 42%, var(--surface-strong)), color-mix(in srgb, var(--accent) 34%, var(--surface-strong)));
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--primary) 58%, var(--surface-strong)), color-mix(in srgb, var(--accent) 48%, var(--surface-strong)));
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 body::before,
@@ -1502,18 +1668,40 @@ body::after {
   .profile-dashboard-header,
   .profile-dashboard-tabs,
   .profile-dashboard-content {
-    backdrop-filter: blur(10px) saturate(126%);
-    -webkit-backdrop-filter: blur(10px) saturate(126%);
+    backdrop-filter: blur(8px) saturate(118%);
+    -webkit-backdrop-filter: blur(8px) saturate(118%);
   }
 
   .navbar-glass-backdrop {
-    backdrop-filter: blur(14px) saturate(132%) brightness(104%);
-    -webkit-backdrop-filter: blur(14px) saturate(132%) brightness(104%);
+    backdrop-filter: blur(10px) saturate(124%) brightness(104%);
+    -webkit-backdrop-filter: blur(10px) saturate(124%) brightness(104%);
   }
 
   .claim-modal-panel {
-    backdrop-filter: blur(16px) saturate(132%);
-    -webkit-backdrop-filter: blur(16px) saturate(132%);
+    backdrop-filter: blur(10px) saturate(124%);
+    -webkit-backdrop-filter: blur(10px) saturate(124%);
+  }
+
+  body {
+    background-size: 118% 118%;
+  }
+
+  body::before {
+    background-size: 112% 112%, 108% 108%;
+    filter: blur(10px);
+    opacity: 0.48;
+    animation: none;
+  }
+
+  body::after {
+    opacity: calc(var(--noise-opacity) * 0.62);
+  }
+
+  .app-background::before {
+    background-size: 112% 112%, 108% 108%, 100% 100%;
+    filter: blur(8px);
+    opacity: 0.42;
+    animation: none;
   }
 
   .recent-activity-card:hover {
@@ -1527,6 +1715,27 @@ body::after {
   .recent-action-btn:not(:disabled):hover,
   .recent-action-btn:not(:disabled):focus-visible {
     transform: translateY(-2px) !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .recent-activity-card:hover,
+  .glass-card:hover,
+  .stats-glow-card:hover,
+  .item-card-hover:hover,
+  .profile-home-btn:hover,
+  .profile-sidebar-tab:hover,
+  .profile-dashboard-tab:hover {
+    transform: none !important;
+  }
+
+  .navbar-glass .navbar-action-button:not(:disabled):hover,
+  .navbar-glass .navbar-action-button:not(:disabled):focus-visible,
+  .quick-action-btn:not(:disabled):hover,
+  .quick-action-btn:not(:disabled):focus-visible,
+  .recent-action-btn:not(:disabled):hover,
+  .recent-action-btn:not(:disabled):focus-visible {
+    transform: none !important;
   }
 }
 
@@ -1551,6 +1760,9 @@ body::after {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 
   body::before,
   .app-background::before,

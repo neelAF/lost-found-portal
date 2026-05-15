@@ -264,10 +264,10 @@ export function HomePage({ items }: HomePageProps) {
                 LF
               </div>
               <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-[0.24em] eyebrow">
+                <p className="text-xs font-medium uppercase tracking-[0.24em] eyebrow max-[360px]:hidden">
                   Campus Support
                 </p>
-                <h1 className="truncate text-base font-semibold text-[var(--text)]">
+                <h1 className="truncate text-base font-semibold leading-tight text-[var(--text)] max-[360px]:text-sm">
                   Lost &amp; Found Portal
                 </h1>
               </div>
@@ -325,10 +325,10 @@ export function HomePage({ items }: HomePageProps) {
           </div>
 
           <div
-            className={`mobile-menu-panel absolute right-3 top-full z-[80] mt-3 w-[min(calc(100vw-2rem),20rem)] origin-top-right rounded-[1.75rem] border border-[var(--navbar-border)] p-3.5 shadow-[0_34px_90px_-42px_var(--navbar-shadow),0_22px_52px_-34px_var(--shadow),inset_0_1px_0_rgba(255,255,255,0.36)] backdrop-blur-2xl transition-all duration-200 ease-out sm:hidden ${
+            className={`mobile-menu-panel absolute right-3 top-full z-[80] mt-3 w-[min(calc(100vw-1.5rem),20rem)] origin-top-right rounded-[1.75rem] border border-[var(--navbar-border)] p-3 shadow-[0_34px_90px_-42px_var(--navbar-shadow),0_22px_52px_-34px_var(--shadow),inset_0_1px_0_rgba(255,255,255,0.36)] transition-all duration-200 ease-out min-[360px]:p-3.5 sm:hidden ${
               isMobileMenuOpen
-                ? "translate-y-0 scale-100 opacity-100"
-                : "pointer-events-none -translate-y-2 scale-[0.98] opacity-0"
+                ? "mobile-menu-panel-open opacity-100"
+                : "mobile-menu-panel-closed pointer-events-none -translate-y-2 opacity-0"
             }`}
           >
             <nav className="relative z-10 grid gap-2.5">
@@ -338,7 +338,7 @@ export function HomePage({ items }: HomePageProps) {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="mobile-menu-item glass flex min-h-12 items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
                 >
-                  Profile
+                  <span className="relative z-10">Profile</span>
                 </Link>
               ) : (
                 <Link
@@ -346,7 +346,7 @@ export function HomePage({ items }: HomePageProps) {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="mobile-menu-item glass flex min-h-12 items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
                 >
-                  Login
+                  <span className="relative z-10">Login</span>
                 </Link>
               )}
               <a
@@ -354,21 +354,21 @@ export function HomePage({ items }: HomePageProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="mobile-menu-item glass flex min-h-12 items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
               >
-                Browse Items
+                <span className="relative z-10">Browse Items</span>
               </a>
               <button
                 type="button"
                 onClick={() => handleMobileProtectedNavigation("/report-found")}
                 className="mobile-menu-item mobile-menu-item-accent navbar-action-button btn-success group relative isolate flex min-h-12 items-center justify-center overflow-hidden rounded-2xl border border-cyan-300/25 bg-white/10 px-4 py-3 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(34,211,238,0.75)] hover:border-cyan-200/55 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.2),0_14px_34px_-16px_rgba(34,211,238,0.98),0_0_34px_-14px_rgba(79,70,229,0.86)]"
               >
-                Report Found
+                <span className="relative z-10">Report Found</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleMobileProtectedNavigation("/report-lost")}
                 className="mobile-menu-item mobile-menu-item-accent navbar-action-button btn-primary group relative isolate flex min-h-12 items-center justify-center overflow-hidden rounded-2xl border border-pink-300/25 bg-white/10 px-4 py-3 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(244,63,94,0.75)] hover:border-pink-200/55 hover:shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_14px_34px_-16px_rgba(244,63,94,0.96),0_0_34px_-14px_rgba(79,70,229,0.86)]"
               >
-                Report Lost
+                <span className="relative z-10">Report Lost</span>
               </button>
             </nav>
           </div>
