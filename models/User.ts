@@ -18,6 +18,11 @@ const userSchema = new Schema(
       type: String,
       required: true,
     },
+    image: {
+      type: String,
+      default: "",
+      trim: true,
+    },
   },
   {
     timestamps: true,
@@ -27,5 +32,15 @@ const userSchema = new Schema(
 export type UserDocument = InferSchemaType<typeof userSchema> & {
   _id: string;
 };
+
+if (models.User && !models.User.schema.path("image")) {
+  models.User.schema.add({
+    image: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  });
+}
 
 export const UserModel = models.User || model("User", userSchema);

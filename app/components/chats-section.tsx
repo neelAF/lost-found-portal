@@ -53,24 +53,24 @@ export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
     <section>
       {showHeader ? (
         <>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
             Active conversations
           </p>
           <h2 className="mt-2 text-3xl font-semibold text-[var(--text)]">Chats</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
+          <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
             Approved claims become private chats between the claimer and the finder.
           </p>
         </>
       ) : null}
 
       {error ? (
-        <div className="mt-6 rounded-[1.25rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+        <div className="mt-6 rounded-[1.25rem] alert-error px-4 py-3 text-sm">
           {error}
         </div>
       ) : null}
 
       {isLoading ? (
-        <div className="mt-8 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 px-6 py-10 text-center text-slate-500">
+        <div className="mt-8 rounded-[1.5rem] panel-muted border-dashed px-6 py-10 text-center">
           Loading chats...
         </div>
       ) : claims.length ? (
@@ -79,37 +79,33 @@ export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
             <Link
               key={claim.id}
               href={`/chat/${claim.id}`}
-              className="rounded-[1.5rem] border border-white/45 bg-white/60 p-5 shadow-[0_16px_48px_rgba(15,23,42,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_56px_rgba(15,23,42,0.12)] dark:bg-white/10"
+              className="rounded-[1.5rem] border border-[var(--border)] bg-[var(--glass)] p-5 shadow-[0_16px_48px_var(--shadow)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_56px_var(--shadow)] "
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-sky-700">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] eyebrow">
                     {claim.itemTitle}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-[var(--text)]">
                     {claim.ownerEmail}
                   </h3>
-                  <p className="mt-1 text-sm text-slate-500">Finder: {claim.finderEmail}</p>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">Finder: {claim.finderEmail}</p>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${
-                    claim.status === "completed"
-                      ? "bg-emerald-200 text-emerald-900"
-                      : "bg-emerald-100 text-emerald-800"
-                  }`}
+                  className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] badge-success"
                 >
                   {claim.status}
                 </span>
               </div>
 
-              <p className="mt-4 text-sm leading-7 text-slate-600">
+              <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
                 {claim.message || "Open the chat to coordinate the handoff."}
               </p>
             </Link>
           ))}
         </div>
       ) : (
-        <div className="mt-8 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 px-6 py-10 text-center text-slate-500">
+        <div className="mt-8 rounded-[1.5rem] panel-muted border-dashed px-6 py-10 text-center">
           No approved chats yet.
         </div>
       )}

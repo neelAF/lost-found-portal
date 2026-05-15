@@ -60,27 +60,27 @@ export function ChangePasswordSection({ showHeader = true }: ChangePasswordSecti
   return (
     <section>
       {!currentUser ? (
-        <div className="rounded-[1.25rem] border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-sm text-slate-600">
+        <div className="rounded-[1.25rem] border border-dashed border-[var(--border)] bg-[var(--surface)] px-4 py-6 text-sm text-[var(--text-secondary)]">
           Login to take action.
         </div>
       ) : null}
 
       {showHeader ? (
         <>
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-700">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
             Account security
           </p>
           <h2 className="mt-2 text-3xl font-semibold text-[var(--text)]">Change Password</h2>
-          <p className="mt-3 text-sm leading-7 text-slate-600">
+          <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
             Signed in as{" "}
-            <span className="font-semibold text-slate-800">{currentUser?.email}</span>
+            <span className="font-semibold text-[var(--text)]">{currentUser?.email}</span>
           </p>
         </>
       ) : null}
 
       <form onSubmit={handleSubmit} className="mt-8 space-y-5">
         <div>
-          <label htmlFor="oldPassword" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label htmlFor="oldPassword" className="mb-2 block text-sm font-semibold text-[var(--text)]">
             Old Password
           </label>
           <input
@@ -89,13 +89,13 @@ export function ChangePasswordSection({ showHeader = true }: ChangePasswordSecti
             required
             value={oldPassword}
             onChange={(event) => setOldPassword(event.target.value)}
-            className="w-full rounded-[1.35rem] border border-white/45 bg-white/60 px-4 py-4 text-sm text-[var(--text)] shadow-inner shadow-white/60 outline-none placeholder:text-slate-400 focus:border-sky-300 dark:bg-white/10 dark:text-slate-100 dark:placeholder:text-slate-400"
+            className="w-full rounded-[1.35rem] glass-input px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--primary)]"
             placeholder="Enter your current password"
           />
         </div>
 
         <div>
-          <label htmlFor="newPassword" className="mb-2 block text-sm font-semibold text-slate-700">
+          <label htmlFor="newPassword" className="mb-2 block text-sm font-semibold text-[var(--text)]">
             New Password
           </label>
           <input
@@ -105,19 +105,19 @@ export function ChangePasswordSection({ showHeader = true }: ChangePasswordSecti
             minLength={6}
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
-            className="w-full rounded-[1.35rem] border border-white/45 bg-white/60 px-4 py-4 text-sm text-[var(--text)] shadow-inner shadow-white/60 outline-none placeholder:text-slate-400 focus:border-sky-300 dark:bg-white/10 dark:text-slate-100 dark:placeholder:text-slate-400"
+            className="w-full rounded-[1.35rem] glass-input px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--primary)]"
             placeholder="At least 6 characters"
           />
         </div>
 
         {error ? (
-          <div className="rounded-[1.25rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <div className="rounded-[1.25rem] alert-error px-4 py-3 text-sm">
             {error}
           </div>
         ) : null}
 
         {success ? (
-          <div className="rounded-[1.25rem] border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <div className="rounded-[1.25rem] alert-success px-4 py-3 text-sm">
             {success}
           </div>
         ) : null}
@@ -125,7 +125,7 @@ export function ChangePasswordSection({ showHeader = true }: ChangePasswordSecti
         <button
           type="submit"
           disabled={isSubmitting || !currentUser}
-          className="inline-flex min-h-13 w-full items-center justify-center rounded-[1.35rem] bg-sky-600 px-6 py-4 text-sm font-semibold text-white shadow-lg shadow-sky-500/25 transition hover:bg-sky-700 hover:shadow-sky-500/35 disabled:cursor-not-allowed disabled:opacity-70"
+          className="recent-action-btn btn-primary min-h-13 w-full rounded-[1.35rem] px-6 py-4 text-sm font-semibold shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? "Updating..." : "Update Password"}
         </button>

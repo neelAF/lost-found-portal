@@ -28,6 +28,7 @@ export async function GET() {
     return NextResponse.json({
       name: user.name,
       email: user.email,
+      image: user.image ?? "",
       createdAt: user.createdAt,
     });
   } catch (error) {
@@ -69,6 +70,7 @@ export async function PATCH(request: Request) {
       user: {
         name: user.name,
         email: user.email,
+        image: user.image ?? "",
         createdAt: user.createdAt,
       },
     });

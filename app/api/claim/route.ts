@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { isValidObjectId } from "mongoose";
 
 import { authOptions } from "@/lib/auth";
 import { getClaimsForUser, normalizeClaim } from "@/lib/claims";
@@ -52,6 +53,10 @@ export async function POST(request: Request) {
 
     if (!itemId) {
       return NextResponse.json({ error: "Item id is required." }, { status: 400 });
+    }
+
+    if (!isValidObjectId(itemId)) {
+      return NextResponse.json({ error: "Invalid item id." }, { status: 400 });
     }
 
     await connectToDatabase();

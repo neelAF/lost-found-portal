@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
+import { Camera } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ChatsSection } from "@/app/components/chats-section";
 import { ChangePasswordSection } from "@/app/components/change-password-section";
@@ -12,10 +14,30 @@ import { MyItemsSection } from "@/app/components/my-items-section";
 type ProfileResponse = {
   name: string;
   email: string;
+  image?: string;
   createdAt: string;
 };
 
+type AvatarUploadResponse = {
+  success?: boolean;
+  image?: string;
+  user?: ProfileResponse;
+  error?: string;
+};
+
 type ProfileTab = "items" | "claims" | "chats" | "password";
+
+const profileNavItems: Array<{ label: string; value: ProfileTab }> = [
+  { label: "My Items", value: "items" },
+  { label: "Claim Requests", value: "claims" },
+  { label: "Chats", value: "chats" },
+  { label: "Change Password", value: "password" },
+];
+
+const avatarMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const avatarFileNamePattern = /\.(jpe?g|png|webp)$/i;
+const avatarUploadFolder = "lost-found-portal/avatars";
+const avatarUploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET ?? "";
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -33,11 +55,23 @@ export function ProfileForm() {
   const [activeTab, setActiveTab] = useState<ProfileTab>("items");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAvatarUploading, setIsAvatarUploading] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
 
   const displayName = name.trim() || profile?.name || currentUser?.name || "User";
   const avatarLetter = displayName.charAt(0).toUpperCase();
+  const avatarImage = avatarPreview || profile?.image || currentUser?.image || "";
+
+  useEffect(() => {
+    return () => {
+      if (avatarPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -59,6 +93,7 @@ export function ProfileForm() {
         const data = (await response.json()) as ProfileResponse;
         setProfile(data);
         setName(data.name);
+        setAvatarPreview("");
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
           setError("Unable to load your profile right now.");
@@ -112,9 +147,94 @@ export function ProfileForm() {
       user: {
         ...currentUser,
         name: payload.user.name,
+        image: payload.user.image ?? currentUser.image,
       },
     });
     setIsSaving(false);
+  }
+
+  async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!currentUser || !file || isAvatarUploading) {
+      return;
+    }
+
+    if (!avatarMimeTypes.includes(file.type) && !avatarFileNamePattern.test(file.name)) {
+      setError("Avatar must be a JPG, PNG, or WEBP image.");
+      event.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError("Avatar image must be 5MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+
+    if (!avatarUploadPreset) {
+      setError("Cloudinary avatar upload preset is not configured.");
+      event.target.value = "";
+      return;
+    }
+
+    const nextPreview = URL.createObjectURL(file);
+    const previousPreview = avatarPreview;
+
+    setAvatarPreview(nextPreview);
+    setError("");
+    setSuccess("");
+    setIsAvatarUploading(true);
+
+    const formData = new FormData();
+    formData.set("file", file);
+    formData.set("upload_preset", avatarUploadPreset);
+    formData.set("folder", avatarUploadFolder);
+
+    try {
+      const response = await fetch("/api/user/avatar", {
+        method: "POST",
+        body: formData,
+      });
+
+      const payload = (await response.json().catch(() => null)) as
+        | AvatarUploadResponse
+        | null;
+
+      if (!response.ok || !payload?.user) {
+        throw new Error(payload?.error ?? "Unable to upload profile avatar right now.");
+      }
+
+      const nextUser = {
+        ...payload.user,
+        image: payload.user.image ?? payload.image ?? "",
+      };
+
+      setProfile(nextUser);
+      setName(nextUser.name);
+      setAvatarPreview("");
+      setSuccess("Profile avatar updated successfully.");
+
+      await update({
+        ...session,
+        user: {
+          ...currentUser,
+          name: nextUser.name,
+          email: nextUser.email,
+          image: nextUser.image ?? "",
+        },
+      });
+    } catch (error) {
+      setAvatarPreview(previousPreview);
+      setError((error as Error).message || "Unable to upload profile avatar right now.");
+    } finally {
+      if (nextPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(nextPreview);
+      }
+
+      setIsAvatarUploading(false);
+      event.target.value = "";
+    }
   }
 
   function handleEditClick() {
@@ -129,145 +249,159 @@ export function ProfileForm() {
   }
 
   return (
-    <main className="relative min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 py-10 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.15),transparent_60%)] before:content-['']">
-      <div className="relative z-10 mx-auto max-w-4xl space-y-6 px-4">
-        <div className="flex items-center justify-between gap-4">
+    <main className="app-background relative min-h-screen py-8 before:absolute before:inset-0 before:content-['']">
+      <div className="relative z-10 mx-auto w-full max-w-[96rem] space-y-6 px-4 sm:px-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="space-y-2">
-            <p className="text-sm font-semibold uppercase tracking-[0.3em] text-indigo-300">
-              Account profile
-            </p>
-            <h1 className="text-xl font-semibold text-white">Your Profile</h1>
-            <p className="text-sm text-slate-400">
-              Manage your account, posted items, claim workflow, and private chats.
+            <h1 className="text-2xl font-semibold text-[var(--text)]">Account Profile</h1>
+            <p className="text-sm font-medium text-[var(--text-secondary)]">
+              Manage your account, profile info, claim requests, chats and more.
             </p>
           </div>
           <Link
             href="/"
-            className="inline-flex min-h-11 items-center justify-center rounded-xl border border-white/10 bg-white/60 px-4 py-2 text-sm font-medium text-slate-700 transition duration-300 hover:bg-white/60 hover:text-slate-950 hover:shadow-xl dark:bg-white/10 dark:text-slate-300 dark:hover:text-white"
+            className="profile-home-btn inline-flex min-h-11 items-center justify-center rounded-xl border px-4 py-2 text-sm font-semibold text-[var(--text)] transition-all duration-150 ease-out"
           >
             Home
           </Link>
         </div>
 
         {isLoading ? (
-          <div className="rounded-2xl border border-white/10 bg-white/60 px-6 py-10 text-center text-sm text-slate-600 backdrop-blur-xl dark:bg-white/10 dark:text-slate-400">
+          <div className="panel-muted rounded-2xl px-6 py-10 text-center text-sm">
             Loading profile...
           </div>
         ) : !currentUser ? (
-          <div className="rounded-2xl border border-white/10 bg-white/60 px-6 py-10 text-center text-sm text-slate-600 backdrop-blur-xl dark:bg-white/10 dark:text-slate-400">
+          <div className="panel-muted rounded-2xl px-6 py-10 text-center text-sm">
             Login to view your profile.
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="rounded-2xl border border-white/10 bg-white/60 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.4)] backdrop-blur-xl transition duration-300 hover:shadow-[0_12px_36px_rgba(0,0,0,0.45)] dark:bg-white/10">
-              <div className="flex flex-col gap-6 md:flex-row md:items-center">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-xl font-bold text-white shadow-md ring-2 ring-white/10">
-                    {avatarLetter}
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-white">{displayName}</h2>
-                    <p className="text-sm text-slate-400">{profile?.email ?? currentUser.email}</p>
-                  </div>
-                </div>
-
-                <div className="ml-auto flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleEditClick()}
-                    disabled={isSaving}
-                    className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-2 text-sm text-white shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {isSaving ? "Saving..." : "Edit"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => void signOut({ callbackUrl: "/" })}
-                    className="rounded-xl border border-white/10 bg-white/60 px-4 py-2 text-sm text-slate-700 transition-all duration-200 hover:bg-white/60 hover:text-slate-950 dark:bg-white/10 dark:text-slate-300 dark:hover:text-white"
-                  >
-                    Logout
-                  </button>
-                </div>
+          <div className="min-w-0 space-y-5">
+              <div className="profile-content-heading hidden">
+                <p className="text-xs font-semibold uppercase tracking-[0.28em] eyebrow">
+                  Account
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-[var(--text)]">
+                  {profileNavItems.find((item) => item.value === activeTab)?.label}
+                </h2>
               </div>
 
-              <div className="mt-4 text-xs text-slate-500">
-                Joined: {profile?.createdAt ? formatDate(profile.createdAt) : "-"}
-              </div>
+              <section className="profile-dashboard-header rounded-2xl p-5 sm:p-6">
+                <div className="flex flex-col gap-6 md:flex-row md:items-center">
+                  <div className="flex items-center gap-4">
+                    <div className="relative h-16 w-16 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => avatarInputRef.current?.click()}
+                        disabled={isAvatarUploading}
+                        className="profile-avatar-button relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-xl font-bold text-[var(--on-accent)] shadow-lg shadow-[var(--shadow)] ring-1 ring-white/20 disabled:cursor-not-allowed disabled:opacity-70"
+                        aria-label="Upload profile avatar"
+                        title="Upload profile avatar"
+                      >
+                        {avatarImage ? (
+                          <Image
+                            src={avatarImage}
+                            alt=""
+                            fill
+                            sizes="64px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          avatarLetter
+                        )}
+                        <span className="profile-avatar-edit-badge" aria-hidden="true">
+                          <Camera className="h-4 w-4" strokeWidth={2.2} />
+                        </span>
+                      </button>
+                      <input
+                        ref={avatarInputRef}
+                        type="file"
+                        accept="image/jpeg,image/jpg,image/png,image/webp"
+                        className="sr-only"
+                        onChange={(event) => void handleAvatarChange(event)}
+                      />
+                    </div>
+                    <div>
+                      <h2 className="mt-1 text-2xl font-semibold text-[var(--text)]">{displayName}</h2>
+                      <p className="text-sm text-[var(--text-muted)]">{profile?.email ?? currentUser.email}</p>
+                      <p className="mt-5 text-xs text-[var(--text-muted)]">
+                        Joined: {profile?.createdAt ? formatDate(profile.createdAt) : "-"}
+                      </p>
+                    </div>
+                  </div>
 
-              {error ? (
-                <div className="mt-4 rounded-xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-300">
-                  {error}
+                  <div className="flex gap-2 md:ml-auto">
+                    <button
+                      type="button"
+                      onClick={() => handleEditClick()}
+                      disabled={isSaving}
+                      className="btn-primary rounded-xl px-4 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      {isSaving ? "Saving..." : "Edit"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void signOut({ callbackUrl: "/" })}
+                      className="logout-btn rounded-xl border border-[var(--border)] bg-[var(--glass)] px-4 py-2 text-sm font-medium text-[var(--text)] transition-all duration-150 ease-out hover:text-[var(--on-accent)]"
+                    >
+                      Logout
+                    </button>
+                  </div>
                 </div>
-              ) : null}
 
-              {success ? (
-                <div className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
-                  {success}
+                {error ? (
+                  <div className="mt-4 rounded-xl alert-error px-4 py-3 text-sm">
+                    {error}
+                  </div>
+                ) : null}
+
+                {success ? (
+                  <div className="mt-4 rounded-xl alert-success px-4 py-3 text-sm">
+                    {success}
+                  </div>
+                ) : null}
+              </section>
+
+              <section className="profile-dashboard-tabs rounded-xl p-2">
+                <div className="flex flex-wrap gap-2">
+                  {profileNavItems.map((item) => {
+                    const isActive = activeTab === item.value;
+
+                    return (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => setActiveTab(item.value)}
+                        className={`profile-dashboard-tab rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-150 ease-out ${
+                          isActive
+                            ? "profile-dashboard-tab-active text-[var(--text)]"
+                            : "text-[var(--text-secondary)] hover:text-[var(--text)]"
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    );
+                  })}
                 </div>
-              ) : null}
-            </div>
+              </section>
 
-            <div className="my-4 border-t border-white/10"></div>
-
-            <div className="flex flex-wrap gap-2 rounded-xl border border-white/10 bg-white/60 p-2 shadow-[0_8px_30px_rgba(0,0,0,0.18)] backdrop-blur-xl dark:bg-white/10">
-              <button
-                type="button"
-                onClick={() => setActiveTab("items")}
-                className={`px-4 py-1.5 text-sm rounded-lg transition ${
-                  activeTab === "items"
-                    ? "bg-white/60 text-slate-950 dark:bg-white/10 dark:text-white"
-                    : "text-slate-700 hover:bg-white/60 dark:text-slate-300 dark:hover:bg-white/10"
-                }`}
-              >
-                My Items
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("claims")}
-                className={`px-4 py-1.5 text-sm rounded-lg transition ${
-                  activeTab === "claims"
-                    ? "bg-white/60 text-slate-950 dark:bg-white/10 dark:text-white"
-                    : "text-slate-700 hover:bg-white/60 dark:text-slate-300 dark:hover:bg-white/10"
-                }`}
-              >
-                Claim Requests
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("chats")}
-                className={`px-4 py-1.5 text-sm rounded-lg transition ${
-                  activeTab === "chats"
-                    ? "bg-white/60 text-slate-950 dark:bg-white/10 dark:text-white"
-                    : "text-slate-700 hover:bg-white/60 dark:text-slate-300 dark:hover:bg-white/10"
-                }`}
-              >
-                Chats
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("password")}
-                className={`px-4 py-1.5 text-sm rounded-lg transition ${
-                  activeTab === "password"
-                    ? "bg-white/60 text-slate-950 dark:bg-white/10 dark:text-white"
-                    : "text-slate-700 hover:bg-white/60 dark:text-slate-300 dark:hover:bg-white/10"
-                }`}
-              >
-                Change Password
-              </button>
+              <section className="profile-dashboard-content rounded-2xl p-4 sm:p-5">
+                {activeTab === "items" ? (
+                  <MyItemsSection
+                    showHeader={false}
+                    useDashboardGrid
+                    usePremiumActionHover
+                    usePremiumCardHover
+                    useProfileCardStyle
+                  />
+                ) : activeTab === "claims" ? (
+                  <ClaimRequestsSection showHeader={false} />
+                ) : activeTab === "chats" ? (
+                  <ChatsSection showHeader={false} />
+                ) : (
+                  <ChangePasswordSection showHeader={false} />
+                )}
+              </section>
             </div>
-
-            <div className="rounded-2xl border border-white/10 bg-white/60 p-4 shadow-[0_8px_30px_rgba(0,0,0,0.28)] backdrop-blur-xl transition duration-300 hover:shadow-[0_12px_36px_rgba(0,0,0,0.38)] dark:bg-white/10">
-              {activeTab === "items" ? (
-                <MyItemsSection showHeader={false} />
-              ) : activeTab === "claims" ? (
-                <ClaimRequestsSection showHeader={false} />
-              ) : activeTab === "chats" ? (
-                <ChatsSection showHeader={false} />
-              ) : (
-                <ChangePasswordSection showHeader={false} />
-              )}
-            </div>
-          </div>
         )}
       </div>
     </main>

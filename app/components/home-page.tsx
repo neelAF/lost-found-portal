@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -86,6 +87,11 @@ export function HomePage({ items }: HomePageProps) {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
   const currentUser = session?.user ?? null;
+  const navbarAvatarLetter = (currentUser?.name || currentUser?.email || "U")
+    .trim()
+    .charAt(0)
+    .toUpperCase();
+  const navbarAvatarImage = currentUser?.image ?? "";
   const [query, setQuery] = useState("");
   const [activeType, setActiveType] = useState<LostItemFilter>("all");
   const [filteredItems, setFilteredItems] = useState(items);
@@ -94,6 +100,8 @@ export function HomePage({ items }: HomePageProps) {
   const [claimingItem, setClaimingItem] = useState<LostItem | null>(null);
   const [claimMessage, setClaimMessage] = useState("");
   const [claimError, setClaimError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [authNotice, setAuthNotice] = useState("");
   const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
   const initialItemsRef = useRef(items);
 
@@ -139,9 +147,9 @@ export function HomePage({ items }: HomePageProps) {
   }, [activeType, query]);
 
   const stats = [
-    { label: "Items found", value: `${items.length}+` },
-    { label: "Students helped", value: "320+" },
-    { label: "Campus locations", value: "18" },
+    { label: "Items found", value: `${items.length}+`, glow: "stats-glow-blue" },
+    { label: "Students helped", value: "320+", glow: "stats-glow-emerald" },
+    { label: "Campus locations", value: "18", glow: "stats-glow-purple" },
   ];
 
   async function handleMarkAsFound(itemId: string) {
@@ -150,6 +158,7 @@ export function HomePage({ items }: HomePageProps) {
     }
 
     setPendingItemId(itemId);
+    setActionError("");
 
     try {
       const response = await fetch(`/api/lost/${itemId}`, {
@@ -177,7 +186,7 @@ export function HomePage({ items }: HomePageProps) {
 
       setFilteredItems(nextItems);
     } catch (error) {
-      console.error(error);
+      setActionError((error as Error).message || "Unable to update the item right now.");
     } finally {
       setPendingItemId(null);
     }
@@ -226,41 +235,57 @@ export function HomePage({ items }: HomePageProps) {
 
   function handleProtectedNavigation(path: string) {
     if (sessionStatus !== "authenticated") {
-      window.alert("Please login first");
+      setAuthNotice("Please login first to continue.");
       return;
     }
 
+    setAuthNotice("");
     router.push(path);
   }
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 before:absolute before:inset-0 before:bg-[radial-gradient(circle_at_top,rgba(59,130,246,0.08),transparent_60%)] before:content-[''] dark:bg-none dark:before:hidden">
+    <div className="app-background relative min-h-screen before:absolute before:inset-0 before:content-['']">
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-16 pt-6">
-        <header className="sticky top-4 z-50 mx-auto w-full max-w-7xl rounded-2xl border border-white/20 bg-white/60 shadow-sm backdrop-blur-xl dark:border-slate-700 dark:bg-white/10 dark:shadow-lg">
-          <div className="flex items-center justify-between gap-4 px-5 py-3">
-            <Link href="/" className="flex items-center gap-3 text-slate-800 dark:text-white">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-sm font-semibold text-white shadow-lg shadow-sky-500/20 dark:bg-white dark:text-slate-950">
+        <header className="navbar-glass sticky top-4 z-50 mx-auto w-full max-w-7xl rounded-2xl">
+          <span aria-hidden="true" className="navbar-glass-backdrop" />
+          <div className="relative z-10 flex flex-col items-stretch justify-between gap-4 px-5 py-3 lg:flex-row lg:items-center">
+            <Link href="/" className="flex min-w-0 items-center gap-3 text-[var(--text)]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--text)] text-sm font-semibold text-[var(--background)] shadow-lg shadow-[var(--shadow)]">
                 LF
               </div>
               <div>
-                <p className="text-sm font-medium uppercase tracking-[0.28em] text-indigo-600 dark:text-indigo-300">
+                <p className="text-sm font-medium uppercase tracking-[0.28em] eyebrow">
                   Campus Support
                 </p>
-                <h1 className="text-lg font-semibold text-slate-800 dark:text-white">
+                <h1 className="text-lg font-semibold text-[var(--text)]">
                   Lost &amp; Found Portal
                 </h1>
               </div>
             </Link>
 
-            <nav className="flex flex-wrap items-center justify-end gap-3">
+            <nav className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
               {sessionStatus === "authenticated" ? (
                 <div className="flex flex-wrap items-center gap-3">
-                  <span className="inline-flex min-h-11 items-center rounded-lg bg-white/60 px-3 py-1 text-sm font-medium text-slate-800 dark:bg-white/10 dark:text-white">
-                    {currentUser?.name || currentUser?.email}
+                  <span
+                    className="navbar-user-avatar relative inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-bold text-white"
+                    title={currentUser?.name || currentUser?.email || "User"}
+                    aria-label={currentUser?.name || currentUser?.email || "User profile"}
+                  >
+                    {navbarAvatarImage ? (
+                      <Image
+                        src={navbarAvatarImage}
+                        alt=""
+                        fill
+                        sizes="44px"
+                        className="object-cover"
+                      />
+                    ) : (
+                      navbarAvatarLetter
+                    )}
                   </span>
                   <Link
                     href="/profile"
-                    className="rounded-lg bg-white/60 px-3 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:text-slate-900 dark:bg-white/10 dark:text-slate-300 dark:hover:text-white"
+                    className="glass rounded-2xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
                   >
                     Profile
                   </Link>
@@ -269,7 +294,7 @@ export function HomePage({ items }: HomePageProps) {
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     href="/login"
-                    className="rounded-lg bg-white/60 px-3 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:text-slate-900 dark:bg-white/10 dark:text-slate-300 dark:hover:text-white"
+                    className="glass rounded-lg px-3 py-1 text-sm font-medium text-[var(--text)] hover:text-[var(--text)]"
                   >
                     Login
                   </Link>
@@ -277,23 +302,27 @@ export function HomePage({ items }: HomePageProps) {
               )}
               <a
                 href="#recent-items"
-                className="rounded-lg bg-white/60 px-3 py-1 text-sm font-medium text-slate-700 transition-colors duration-200 hover:text-slate-900 dark:bg-white/10 dark:text-slate-300 dark:hover:text-white"
+                className="glass rounded-2xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
               >
                 Browse Items
               </a>
               <button
                 type="button"
                 onClick={() => handleProtectedNavigation("/report-found")}
-                className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95"
+                className="navbar-action-button btn-success group relative isolate overflow-hidden rounded-2xl border border-cyan-300/25 bg-white/10 px-4 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(34,211,238,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-cyan-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-cyan-200/55 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.2),0_14px_34px_-16px_rgba(34,211,238,0.98),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-cyan-300/22 hover:before:via-blue-400/20 hover:before:to-indigo-400/18 hover:before:opacity-100"
               >
-                Report Found
+                <span className="relative z-10 block">
+                  Report Found
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => handleProtectedNavigation("/report-lost")}
-                className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95"
+                className="navbar-action-button btn-primary group relative isolate overflow-hidden rounded-2xl border border-pink-300/25 bg-white/10 px-4 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(244,63,94,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-pink-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-pink-200/55 hover:shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_14px_34px_-16px_rgba(244,63,94,0.96),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-pink-300/20 hover:before:via-blue-400/18 hover:before:to-indigo-400/18 hover:before:opacity-100"
               >
-                Report Lost
+                <span className="relative z-10 block">
+                  Report Lost
+                </span>
               </button>
               <ThemeToggle />
             </nav>
@@ -302,25 +331,25 @@ export function HomePage({ items }: HomePageProps) {
 
         <main className="flex flex-1 flex-col gap-10 pt-10">
           <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div className="rounded-[2rem] border border-slate-200 bg-white/60 p-8 shadow-sm transition-all duration-300 hover:shadow-md sm:p-10 dark:border-slate-800 dark:bg-white/10">
-              <p className="mb-4 inline-flex rounded-full border border-slate-200 bg-white/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.32em] text-indigo-600 dark:border-slate-700 dark:bg-white/10 dark:text-indigo-300">
+            <div className="glass-card rounded-[2rem] p-8 shadow-sm transition-all duration-300 hover:shadow-md sm:p-10">
+              <p className="mb-4 inline-flex glass rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.32em] eyebrow">
                 Trusted across campus
               </p>
-              <h2 className="max-w-2xl text-4xl font-semibold leading-tight text-[var(--text)] dark:text-white sm:text-6xl">
+              <h2 className="max-w-2xl text-4xl font-semibold leading-tight text-[var(--text)] sm:text-6xl">
                 Reconnect people with the things that matter most.
               </h2>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600 dark:text-gray-300 sm:text-lg">
+              <p className="mt-5 max-w-2xl text-base leading-8 text-[var(--text-secondary)] sm:text-lg">
                 A fast, student-friendly portal to report missing belongings, search recent
                 activity, and help lost items find their way home.
               </p>
 
-              <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-slate-200 bg-white/60 p-6 text-slate-800 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-700 dark:bg-white/10 dark:text-white">
+              <div className="glass-card mx-auto mt-8 max-w-3xl rounded-2xl p-6 text-[var(--text)] shadow-sm transition-all duration-300 hover:shadow-md">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-xl font-semibold text-[var(--text)] dark:text-white">
+                    <h3 className="text-xl font-semibold text-[var(--text)]">
                       Search and manage items
                     </h3>
-                    <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
+                    <p className="mt-1 text-sm text-[var(--text-secondary)]">
                       Browse active reports, refine results, or submit a new item in seconds.
                     </p>
                   </div>
@@ -335,9 +364,9 @@ export function HomePage({ items }: HomePageProps) {
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
                       placeholder="Search items, description, location..."
-                      className="w-full rounded-xl border border-slate-300 bg-white/60 px-4 py-2 pl-10 text-sm text-[var(--text)] placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-white/10 dark:text-white"
+                      className="glass-input w-full rounded-xl px-4 py-2 pl-10 text-sm text-[var(--text)] placeholder:text-[var(--text-secondary)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                     />
-                    <span className="absolute left-3 top-3 text-slate-400 dark:text-slate-400">
+                    <span className="absolute left-3 top-3 text-[var(--text-muted)] ">
                       <SearchIcon />
                     </span>
                   </div>
@@ -351,11 +380,10 @@ export function HomePage({ items }: HomePageProps) {
                           key={filter.value}
                           type="button"
                           onClick={() => void handleTypeFilterChange(filter.value)}
-                          className={`cursor-pointer rounded-full border px-4 py-1.5 text-sm font-medium transition duration-200 ease-in-out ${
-                            isActive
-                              ? "border-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 text-white shadow-md"
-                              : "border-slate-200 bg-white/60 text-slate-700 hover:bg-slate-50 hover:text-[var(--text)] dark:border-slate-700 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20 dark:hover:text-white"
-                          }`}
+                          className={`filter-tab cursor-pointer rounded-full border px-4 py-1.5 text-sm font-medium transition duration-200 ease-in-out ${isActive
+                            ? "border-transparent bg-[var(--accent)] text-[var(--on-accent)] shadow-md"
+                            : "glass border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface)] hover:text-[var(--text)]"
+                            }`}
                         >
                           {filter.label}
                         </button>
@@ -367,18 +395,24 @@ export function HomePage({ items }: HomePageProps) {
                     <button
                       type="button"
                       onClick={() => handleProtectedNavigation("/report-lost")}
-                      className="rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-2 text-white font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95"
+                      className="quick-action-btn btn-primary rounded-xl px-4 py-2 font-medium active:scale-95"
                     >
                       + Report Lost
                     </button>
                     <button
                       type="button"
                       onClick={() => handleProtectedNavigation("/report-found")}
-                      className="rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 px-4 py-2 text-white font-medium shadow-sm transition-all duration-200 hover:scale-105 hover:shadow-md active:scale-95"
+                      className="quick-action-btn btn-success rounded-xl px-4 py-2 font-medium active:scale-95"
                     >
                       + Report Found
                     </button>
                   </div>
+
+                  {authNotice ? (
+                    <div className="rounded-[1.25rem] alert-error px-4 py-3 text-sm">
+                      {authNotice}
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -387,12 +421,12 @@ export function HomePage({ items }: HomePageProps) {
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-[1.75rem] border border-slate-200 bg-white/60 p-6 shadow-sm transition-all duration-300 hover:shadow-md dark:border-slate-800 dark:bg-white/10 dark:hover:shadow-xl"
+                  className={`stats-glow-card ${stat.glow} glass-card rounded-[1.75rem] p-6 shadow-sm transition-all duration-200 ease-out hover:shadow-md dark:hover:shadow-xl`}
                 >
-                  <p className="text-sm uppercase tracking-[0.25em] text-slate-500 dark:text-gray-500">
+                  <p className="text-sm uppercase tracking-[0.25em] text-[var(--text-secondary)]">
                     {stat.label}
                   </p>
-                  <p className="mt-3 text-4xl font-semibold text-[var(--text)] dark:text-white">
+                  <p className="mt-3 text-4xl font-semibold text-[var(--text)]">
                     {stat.value}
                   </p>
                 </div>
@@ -402,22 +436,28 @@ export function HomePage({ items }: HomePageProps) {
 
           <section
             id="recent-items"
-            className="rounded-[2rem] border border-slate-200 bg-white/60 p-8 shadow-sm sm:p-10 dark:border-slate-800 dark:bg-white/10"
+            className="glass-card scroll-mt-28 rounded-[2rem] p-8 shadow-sm sm:p-10"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-300">
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
                   Recent activity
                 </p>
-                <h3 className="mt-2 text-3xl font-semibold text-[var(--text)] dark:text-white">
+                <h3 className="mt-2 text-3xl font-semibold text-[var(--text)]">
                   Submitted items appear here instantly
                 </h3>
               </div>
-              <p className="text-sm text-slate-500 dark:text-gray-300">
+              <p className="text-sm text-[var(--text-secondary)]">
                 Showing {filteredItems.length} of {items.length} reports
                 {isLoading ? " | Updating..." : ""}
               </p>
             </div>
+
+            {actionError ? (
+              <div className="mt-6 rounded-[1.25rem] alert-error px-4 py-3 text-sm">
+                {actionError}
+              </div>
+            ) : null}
 
             <div className="mt-8 grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {filteredItems.map((item) => (
@@ -428,6 +468,7 @@ export function HomePage({ items }: HomePageProps) {
                   canResolve={Boolean(currentUser) && isItemOwner(item.userEmail, currentUser?.email)}
                   canClaim={Boolean(currentUser) && !isItemOwner(item.userEmail, currentUser?.email)}
                   isBusy={pendingItemId === item.id}
+                  useRecentActionStyle
                   onResolve={handleMarkAsFound}
                   onClaim={(nextItem) => {
                     setClaimError("");
@@ -439,7 +480,7 @@ export function HomePage({ items }: HomePageProps) {
             </div>
 
             {!filteredItems.length ? (
-              <div className="mt-8 rounded-[1.5rem] border border-dashed border-slate-300 bg-white/60 px-6 py-10 text-center text-slate-500 dark:border-slate-700 dark:bg-white/10 dark:text-gray-300">
+              <div className="glass-card mt-8 rounded-[1.5rem] border border-dashed border-[var(--border)] px-6 py-10 text-center text-[var(--text-secondary)]">
                 No matching items yet. Try a different keyword or submit a new report.
               </div>
             ) : null}
@@ -448,14 +489,14 @@ export function HomePage({ items }: HomePageProps) {
       </div>
 
       {claimingItem ? (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-950/45 px-5">
-          <div className="w-full max-w-xl rounded-[2rem] border border-slate-200 bg-white/60 p-6 shadow-xl sm:p-8 dark:border-slate-700 dark:bg-white/10">
+        <div className="claim-modal-backdrop fixed inset-0 z-40 flex items-center justify-center px-5">
+          <div className="claim-modal-panel w-full max-w-xl rounded-[2rem] p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-sm font-semibold uppercase tracking-[0.3em] text-indigo-600 dark:text-indigo-300">
+                <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
                   Claim Request
                 </p>
-                <h3 className="mt-2 text-2xl font-semibold text-[var(--text)] dark:text-white">
+                <h3 className="mt-2 text-2xl font-semibold text-[var(--text)]">
                   Claim {claimingItem.title}
                 </h3>
               </div>
@@ -466,20 +507,20 @@ export function HomePage({ items }: HomePageProps) {
                   setClaimMessage("");
                   setClaimError("");
                 }}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 dark:border-slate-700 dark:text-gray-300 dark:hover:bg-white/10"
+                className="claim-modal-danger-hover glass inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--text-secondary)] transition-all duration-150 ease-out"
               >
                 X
               </button>
             </div>
 
-            <p className="mt-4 text-sm leading-7 text-slate-600 dark:text-gray-300">
+            <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
               Tell the finder why this item belongs to you. Share details like brand, markings, or
               what was inside.
             </p>
 
             <label
               htmlFor="claim-message"
-              className="mt-6 block text-sm font-semibold text-[var(--text)] dark:text-white"
+              className="mt-6 block text-sm font-semibold text-[var(--text)]"
             >
               Why this is your item?
             </label>
@@ -489,11 +530,11 @@ export function HomePage({ items }: HomePageProps) {
               value={claimMessage}
               onChange={(event) => setClaimMessage(event.target.value)}
               placeholder="Example: The bag has my student ID in the front pocket and a blue charger inside."
-              className="mt-2 w-full rounded-[1.35rem] border border-slate-300 bg-white/60 px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-white/10 dark:text-white"
+              className="glass-input mt-2 w-full rounded-[1.35rem] px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)] focus:ring-2 focus:ring-[var(--primary)]"
             />
 
             {claimError ? (
-              <div className="mt-4 rounded-[1.25rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-300">
+              <div className="mt-4 rounded-[1.25rem] alert-error px-4 py-3 text-sm">
                 {claimError}
               </div>
             ) : null}
@@ -506,7 +547,7 @@ export function HomePage({ items }: HomePageProps) {
                   setClaimMessage("");
                   setClaimError("");
                 }}
-                className="rounded-xl border border-slate-300 bg-white/60 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:bg-white/10 dark:text-gray-300 dark:hover:bg-white/20"
+                className="claim-modal-danger-hover glass rounded-xl px-4 py-2 text-sm font-medium text-[var(--text)] transition-all duration-150 ease-out"
               >
                 Cancel
               </button>
@@ -514,7 +555,7 @@ export function HomePage({ items }: HomePageProps) {
                 type="button"
                 onClick={() => void handleClaimSubmit()}
                 disabled={isSubmittingClaim}
-                className="rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 px-4 py-2 text-sm font-medium text-white shadow-md hover:shadow-lg hover:scale-[1.03] transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-70"
+                className="claim-send-request-btn recent-action-btn btn-accent rounded-xl px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isSubmittingClaim ? "Submitting..." : "Send Claim Request"}
               </button>

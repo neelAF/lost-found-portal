@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
+import { isValidObjectId } from "mongoose";
 
 import { authOptions } from "@/lib/auth";
 import { isClaimParticipant } from "@/lib/claim-shared";
@@ -21,6 +22,10 @@ export async function GET(request: Request) {
 
     if (!claimId) {
       return NextResponse.json({ error: "claimId is required." }, { status: 400 });
+    }
+
+    if (!isValidObjectId(claimId)) {
+      return NextResponse.json({ error: "Invalid claim id." }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -68,6 +73,10 @@ export async function POST(request: Request) {
 
     if (!claimId || !message) {
       return NextResponse.json({ error: "claimId and message are required." }, { status: 400 });
+    }
+
+    if (!isValidObjectId(claimId)) {
+      return NextResponse.json({ error: "Invalid claim id." }, { status: 400 });
     }
 
     await connectToDatabase();

@@ -7,6 +7,14 @@ import { uploadImageToCloudinary } from "@/lib/cloudinary";
 
 export const dynamic = "force-dynamic";
 
+const allowedImageMimeTypes = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
+const allowedImageFileNamePattern = /\.(jpe?g|png|webp)$/i;
+const maxItemImageSize = 5 * 1024 * 1024;
+
+function isAllowedImageFile(file: File) {
+  return allowedImageMimeTypes.has(file.type) || allowedImageFileNamePattern.test(file.name);
+}
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -57,6 +65,20 @@ export async function POST(request: Request) {
     let image = "";
 
     if (imageFile instanceof File && imageFile.size > 0) {
+      if (!isAllowedImageFile(imageFile)) {
+        return NextResponse.json(
+          { error: "Item image must be a JPG, PNG, or WEBP image." },
+          { status: 400 },
+        );
+      }
+
+      if (imageFile.size > maxItemImageSize) {
+        return NextResponse.json(
+          { error: "Item image must be 5MB or smaller." },
+          { status: 400 },
+        );
+      }
+
       image = await uploadImageToCloudinary(imageFile);
     }
 

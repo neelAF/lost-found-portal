@@ -152,26 +152,26 @@ export function ChatRoom() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden px-5 py-8 sm:px-8 lg:px-10">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.18),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(16,185,129,0.2),_transparent_26%),linear-gradient(180deg,_#f7fbff,_#edf7ff_55%,_#f8fafc)]" />
+    <main className="relative min-h-screen overflow-x-hidden px-5 py-8 sm:px-8 lg:px-10">
+      <div className="app-background-layer absolute inset-0 -z-10" />
       <div className="mx-auto max-w-7xl">
-        <div className="rounded-[2rem] border border-white/35 bg-white/60 p-6 shadow-[0_24px_80px_rgba(15,23,42,0.12)] backdrop-blur-2xl dark:bg-white/10 sm:p-8">
+        <div className="glass-card rounded-[2rem] p-6 shadow-[0_24px_80px_var(--shadow)] sm:p-8">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-sky-700">
+              <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
                 Private chat
               </p>
               <h1 className="mt-2 text-3xl font-semibold text-[var(--text)]">
                 {claim?.itemTitle ?? "Claim Conversation"}
               </h1>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
+              <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
                 {otherParticipant ? `Chatting with ${otherParticipant}` : "Loading participant..."}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/profile"
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-200 bg-white/60 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-white/60 dark:bg-white/10 dark:text-slate-200"
+                className="btn-ghost min-h-11 rounded-full px-5 py-2.5 text-sm font-medium"
               >
                 Back to Profile
               </Link>
@@ -179,7 +179,7 @@ export function ChatRoom() {
                 type="button"
                 onClick={() => void handleComplete()}
                 disabled={!claim || claim.status !== "approved" || isCompleting}
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-70"
+                className="btn-success min-h-11 rounded-full px-5 py-2.5 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {isCompleting ? "Completing..." : "Mark as Completed"}
               </button>
@@ -187,18 +187,18 @@ export function ChatRoom() {
           </div>
 
           {error ? (
-            <div className="mt-6 rounded-[1.25rem] border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="mt-6 rounded-[1.25rem] alert-error px-4 py-3 text-sm">
               {error}
             </div>
           ) : null}
 
           {isLoading ? (
-            <div className="mt-8 rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 px-6 py-10 text-center text-slate-500">
+            <div className="mt-8 rounded-[1.5rem] panel-muted border-dashed px-6 py-10 text-center">
               Loading chat...
             </div>
           ) : (
             <div className="mt-8 grid gap-6 lg:grid-cols-[1.6fr_0.8fr]">
-              <div className="rounded-[1.75rem] border border-white/45 bg-white/60 p-5 shadow-[0_16px_48px_rgba(15,23,42,0.08)] dark:bg-white/10">
+              <div className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--glass)] p-5 shadow-[0_16px_48px_var(--shadow)]">
                 <div className="space-y-4">
                   {messages.length ? (
                     messages.map((entry) => {
@@ -210,17 +210,15 @@ export function ChatRoom() {
                           className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-xl rounded-[1.5rem] px-4 py-3 text-sm shadow-sm ${
-                              isOwnMessage
-                                ? "bg-sky-600 text-white"
-                                : "border border-slate-200 bg-slate-50 text-slate-700"
-                            }`}
+                            className={`max-w-full break-words rounded-[1.5rem] px-4 py-3 text-sm shadow-sm sm:max-w-xl ${isOwnMessage
+                                ? "bg-[var(--primary)] text-[var(--on-accent)]"
+                                : "border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+                              }`}
                           >
                             <p>{entry.message}</p>
                             <p
-                              className={`mt-2 text-xs ${
-                                isOwnMessage ? "text-white/80" : "text-slate-400"
-                              }`}
+                              className={`mt-2 text-xs ${isOwnMessage ? "text-[var(--on-accent)]/80" : "text-[var(--text-secondary)]"
+                                }`}
                             >
                               {formatTime(entry.createdAt)}
                             </p>
@@ -229,15 +227,15 @@ export function ChatRoom() {
                       );
                     })
                   ) : (
-                    <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-slate-50/80 px-6 py-10 text-center text-slate-500">
+                    <div className="rounded-[1.5rem] panel-muted border-dashed px-6 py-10 text-center">
                       No messages yet. Start the conversation below.
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="rounded-[1.75rem] border border-white/45 bg-white/60 p-5 shadow-[0_16px_48px_rgba(15,23,42,0.08)] dark:bg-white/10">
-                <p className="text-sm font-semibold uppercase tracking-[0.24em] text-sky-700">
+              <div className="rounded-[1.75rem] border border-[var(--border)] bg-[var(--glass)] p-5 shadow-[0_16px_48px_var(--shadow)]">
+                <p className="text-sm font-semibold uppercase tracking-[0.24em] eyebrow">
                   Message
                 </p>
                 <textarea
@@ -250,13 +248,13 @@ export function ChatRoom() {
                       ? "This claim has been completed."
                       : "Write your message here..."
                   }
-                  className="mt-4 w-full rounded-[1.35rem] border border-slate-200 bg-white/60 px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-slate-400 focus:border-sky-300 disabled:cursor-not-allowed disabled:bg-slate-50 dark:bg-white/10 dark:text-slate-100 dark:placeholder:text-slate-400"
+                  className="mt-4 w-full rounded-[1.35rem] glass-input px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--primary)] disabled:cursor-not-allowed disabled:bg-[var(--surface)]"
                 />
                 <button
                   type="button"
                   onClick={() => void handleSend()}
                   disabled={!claim || claim.status !== "approved" || !message.trim() || isSending}
-                  className="mt-4 inline-flex min-h-12 w-full items-center justify-center rounded-[1.25rem] bg-sky-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  className="mt-4 btn-primary min-h-12 w-full rounded-[1.25rem] px-5 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   {isSending ? "Sending..." : "Send Message"}
                 </button>

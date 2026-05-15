@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { getServerSession } from "next-auth";
-import { ThemeProvider } from "next-themes";
 
 import { authOptions } from "@/lib/auth";
 import { Providers } from "./providers";
@@ -19,11 +18,14 @@ export default async function RootLayout({
   const session = await getServerSession(authOptions);
 
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
+    <html
+      lang="en"
+      className="h-full"
+      suppressHydrationWarning
+      data-scroll-behavior="smooth"
+    >
       <body className="min-h-full font-sans text-foreground antialiased">
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-          <Providers session={session}>{children}</Providers>
-        </ThemeProvider>
+        <Providers session={session}>{children}</Providers>
       </body>
     </html>
   );
