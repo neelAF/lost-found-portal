@@ -248,24 +248,24 @@ export function HomePage({ items }: HomePageProps) {
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-16 pt-6">
         <header className="navbar-glass sticky top-4 z-50 mx-auto w-full max-w-7xl rounded-2xl">
           <span aria-hidden="true" className="navbar-glass-backdrop" />
-          <div className="relative z-10 flex flex-col items-stretch justify-between gap-4 px-5 py-3 lg:flex-row lg:items-center">
-            <Link href="/" className="flex min-w-0 items-center gap-3 text-[var(--text)]">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--text)] text-sm font-semibold text-[var(--background)] shadow-lg shadow-[var(--shadow)]">
+          <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-3 px-3 py-3 sm:px-5 lg:flex-nowrap">
+            <Link href="/" className="flex min-w-0 shrink items-center gap-2 text-[var(--text)] sm:gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--text)] text-sm font-semibold text-[var(--background)] shadow-lg shadow-[var(--shadow)]">
                 LF
               </div>
-              <div>
+              <div className="min-w-0">
                 <p className="text-sm font-medium uppercase tracking-[0.28em] eyebrow">
                   Campus Support
                 </p>
-                <h1 className="text-lg font-semibold text-[var(--text)]">
+                <h1 className="truncate text-lg font-semibold text-[var(--text)]">
                   Lost &amp; Found Portal
                 </h1>
               </div>
             </Link>
 
-            <nav className="flex flex-wrap items-center justify-start gap-3 lg:justify-end">
+            <nav className="ml-auto flex min-w-0 flex-nowrap items-center justify-end gap-2 max-[560px]:flex-wrap lg:gap-3">
               {sessionStatus === "authenticated" ? (
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex shrink-0 flex-nowrap items-center gap-2 lg:gap-3">
                   <span
                     className="navbar-user-avatar relative inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-bold text-white"
                     title={currentUser?.name || currentUser?.email || "User"}
@@ -285,16 +285,16 @@ export function HomePage({ items }: HomePageProps) {
                   </span>
                   <Link
                     href="/profile"
-                    className="glass rounded-2xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
+                    className="glass shrink-0 whitespace-nowrap rounded-2xl border border-white/25 bg-white/10 px-3 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)] lg:px-4"
                   >
                     Profile
                   </Link>
                 </div>
               ) : (
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex shrink-0 flex-nowrap items-center gap-2 lg:gap-3">
                   <Link
                     href="/login"
-                    className="glass rounded-lg px-3 py-1 text-sm font-medium text-[var(--text)] hover:text-[var(--text)]"
+                    className="glass shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm font-medium text-[var(--text)] hover:text-[var(--text)]"
                   >
                     Login
                   </Link>
@@ -302,14 +302,14 @@ export function HomePage({ items }: HomePageProps) {
               )}
               <a
                 href="#recent-items"
-                className="glass rounded-2xl border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
+                className="glass shrink-0 whitespace-nowrap rounded-2xl border border-white/25 bg-white/10 px-3 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)] lg:px-4"
               >
                 Browse Items
               </a>
               <button
                 type="button"
                 onClick={() => handleProtectedNavigation("/report-found")}
-                className="navbar-action-button btn-success group relative isolate overflow-hidden rounded-2xl border border-cyan-300/25 bg-white/10 px-4 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(34,211,238,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-cyan-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-cyan-200/55 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.2),0_14px_34px_-16px_rgba(34,211,238,0.98),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-cyan-300/22 hover:before:via-blue-400/20 hover:before:to-indigo-400/18 hover:before:opacity-100"
+                className="navbar-action-button btn-success group relative isolate shrink-0 overflow-hidden whitespace-nowrap rounded-2xl border border-cyan-300/25 bg-white/10 px-3 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(34,211,238,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-cyan-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-cyan-200/55 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.2),0_14px_34px_-16px_rgba(34,211,238,0.98),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-cyan-300/22 hover:before:via-blue-400/20 hover:before:to-indigo-400/18 hover:before:opacity-100 lg:px-4"
               >
                 <span className="relative z-10 block">
                   Report Found
@@ -318,7 +318,7 @@ export function HomePage({ items }: HomePageProps) {
               <button
                 type="button"
                 onClick={() => handleProtectedNavigation("/report-lost")}
-                className="navbar-action-button btn-primary group relative isolate overflow-hidden rounded-2xl border border-pink-300/25 bg-white/10 px-4 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(244,63,94,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-pink-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-pink-200/55 hover:shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_14px_34px_-16px_rgba(244,63,94,0.96),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-pink-300/20 hover:before:via-blue-400/18 hover:before:to-indigo-400/18 hover:before:opacity-100"
+                className="navbar-action-button btn-primary group relative isolate shrink-0 overflow-hidden whitespace-nowrap rounded-2xl border border-pink-300/25 bg-white/10 px-3 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(244,63,94,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-pink-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-pink-200/55 hover:shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_14px_34px_-16px_rgba(244,63,94,0.96),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-pink-300/20 hover:before:via-blue-400/18 hover:before:to-indigo-400/18 hover:before:opacity-100 lg:px-4"
               >
                 <span className="relative z-10 block">
                   Report Lost
