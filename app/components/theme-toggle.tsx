@@ -39,7 +39,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={cycleTheme}
-      className="glass shrink-0 rounded-lg p-2 text-[var(--text)]"
+      className="glass flex min-h-11 w-full shrink-0 items-center justify-center rounded-2xl p-2 text-[var(--text)] sm:min-h-0 sm:w-auto sm:rounded-lg"
       aria-label={`Current theme: ${theme}`}
       title={`Theme: ${theme}`}
     >

@@ -103,6 +103,7 @@ export function HomePage({ items }: HomePageProps) {
   const [actionError, setActionError] = useState("");
   const [authNotice, setAuthNotice] = useState("");
   const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const initialItemsRef = useRef(items);
 
   useEffect(() => {
@@ -243,13 +244,137 @@ export function HomePage({ items }: HomePageProps) {
     router.push(path);
   }
 
+  function handleMobileProtectedNavigation(path: string) {
+    setIsMobileMenuOpen(false);
+    handleProtectedNavigation(path);
+  }
+
   return (
     <div className="app-background relative min-h-screen before:absolute before:inset-0 before:content-['']">
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-7xl flex-col px-4 pb-16 pt-6">
         <header className="navbar-glass sticky top-4 z-50 mx-auto w-full max-w-7xl rounded-2xl">
           <span aria-hidden="true" className="navbar-glass-backdrop" />
-          <div className="relative z-10 flex flex-wrap items-center justify-between gap-x-3 gap-y-3 px-3 py-3 sm:px-5 lg:flex-nowrap">
-            <Link href="/" className="flex min-w-0 shrink items-center gap-2 text-[var(--text)] sm:gap-3">
+          <div className="relative z-10 flex items-center justify-between gap-3 px-3 py-3 sm:hidden">
+            <Link
+              href="/"
+              className="flex min-w-0 shrink items-center gap-2 text-[var(--text)]"
+              onClick={() => setIsMobileMenuOpen(false)}
+            >
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--text)] text-sm font-semibold text-[var(--background)] shadow-lg shadow-[var(--shadow)]">
+                LF
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-[0.24em] eyebrow">
+                  Campus Support
+                </p>
+                <h1 className="truncate text-base font-semibold text-[var(--text)]">
+                  Lost &amp; Found Portal
+                </h1>
+              </div>
+            </Link>
+
+            <div className="flex shrink-0 items-center gap-2">
+              {sessionStatus === "authenticated" ? (
+                <span
+                  className="navbar-user-avatar relative inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-bold text-white"
+                  title={currentUser?.name || currentUser?.email || "User"}
+                  aria-label={currentUser?.name || currentUser?.email || "User profile"}
+                >
+                  {navbarAvatarImage ? (
+                    <Image
+                      src={navbarAvatarImage}
+                      alt=""
+                      fill
+                      sizes="44px"
+                      className="object-cover"
+                    />
+                  ) : (
+                    navbarAvatarLetter
+                  )}
+                </span>
+              ) : null}
+              <div className="h-11 w-11">
+                <ThemeToggle />
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+                className="mobile-menu-trigger glass inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/25 bg-white/10 text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)]"
+                aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+                aria-expanded={isMobileMenuOpen}
+              >
+                <span className="relative h-4 w-5" aria-hidden="true">
+                  <span
+                    className={`mobile-menu-trigger-line absolute left-0 top-0 h-0.5 w-5 rounded-full bg-current ${
+                      isMobileMenuOpen ? "translate-y-[7px] rotate-45" : ""
+                    }`}
+                  />
+                  <span
+                    className={`mobile-menu-trigger-line absolute left-0 top-[7px] h-0.5 w-5 rounded-full bg-current ${
+                      isMobileMenuOpen ? "scale-x-0 opacity-0" : ""
+                    }`}
+                  />
+                  <span
+                    className={`mobile-menu-trigger-line absolute left-0 top-[14px] h-0.5 w-5 rounded-full bg-current ${
+                      isMobileMenuOpen ? "-translate-y-[7px] -rotate-45" : ""
+                    }`}
+                  />
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div
+            className={`mobile-menu-panel absolute right-3 top-full z-[80] mt-3 w-[min(calc(100vw-2rem),20rem)] origin-top-right rounded-[1.75rem] border border-[var(--navbar-border)] p-3.5 shadow-[0_34px_90px_-42px_var(--navbar-shadow),0_22px_52px_-34px_var(--shadow),inset_0_1px_0_rgba(255,255,255,0.36)] backdrop-blur-2xl transition-all duration-200 ease-out sm:hidden ${
+              isMobileMenuOpen
+                ? "translate-y-0 scale-100 opacity-100"
+                : "pointer-events-none -translate-y-2 scale-[0.98] opacity-0"
+            }`}
+          >
+            <nav className="relative z-10 grid gap-2.5">
+              {sessionStatus === "authenticated" ? (
+                <Link
+                  href="/profile"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="mobile-menu-item glass flex min-h-12 items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
+                >
+                  Profile
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="mobile-menu-item glass flex min-h-12 items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
+                >
+                  Login
+                </Link>
+              )}
+              <a
+                href="#recent-items"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="mobile-menu-item glass flex min-h-12 items-center justify-center rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)]"
+              >
+                Browse Items
+              </a>
+              <button
+                type="button"
+                onClick={() => handleMobileProtectedNavigation("/report-found")}
+                className="mobile-menu-item mobile-menu-item-accent navbar-action-button btn-success group relative isolate flex min-h-12 items-center justify-center overflow-hidden rounded-2xl border border-cyan-300/25 bg-white/10 px-4 py-3 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(34,211,238,0.75)] hover:border-cyan-200/55 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.2),0_14px_34px_-16px_rgba(34,211,238,0.98),0_0_34px_-14px_rgba(79,70,229,0.86)]"
+              >
+                Report Found
+              </button>
+              <button
+                type="button"
+                onClick={() => handleMobileProtectedNavigation("/report-lost")}
+                className="mobile-menu-item mobile-menu-item-accent navbar-action-button btn-primary group relative isolate flex min-h-12 items-center justify-center overflow-hidden rounded-2xl border border-pink-300/25 bg-white/10 px-4 py-3 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(244,63,94,0.75)] hover:border-pink-200/55 hover:shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_14px_34px_-16px_rgba(244,63,94,0.96),0_0_34px_-14px_rgba(79,70,229,0.86)]"
+              >
+                Report Lost
+              </button>
+            </nav>
+          </div>
+
+          <div className="relative z-10 hidden flex-col items-center justify-between gap-3 px-3 py-3 sm:flex sm:flex-row sm:flex-wrap sm:gap-x-3 sm:gap-y-3 sm:px-5 lg:flex-nowrap">
+            <Link href="/" className="flex min-w-0 shrink items-center justify-center gap-2 text-[var(--text)] sm:justify-start sm:gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[var(--text)] text-sm font-semibold text-[var(--background)] shadow-lg shadow-[var(--shadow)]">
                 LF
               </div>
@@ -263,9 +388,9 @@ export function HomePage({ items }: HomePageProps) {
               </div>
             </Link>
 
-            <nav className="ml-auto flex min-w-0 flex-nowrap items-center justify-end gap-2 max-[560px]:flex-wrap lg:gap-3">
+            <nav className="grid w-full min-w-0 grid-cols-6 items-center gap-2 sm:ml-auto sm:flex sm:w-auto sm:flex-nowrap sm:justify-end lg:gap-3">
               {sessionStatus === "authenticated" ? (
-                <div className="flex shrink-0 flex-nowrap items-center gap-2 lg:gap-3">
+                <div className="col-span-3 flex min-w-0 flex-nowrap items-center gap-2 sm:shrink-0 lg:gap-3">
                   <span
                     className="navbar-user-avatar relative inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full text-base font-bold text-white"
                     title={currentUser?.name || currentUser?.email || "User"}
@@ -285,16 +410,16 @@ export function HomePage({ items }: HomePageProps) {
                   </span>
                   <Link
                     href="/profile"
-                    className="glass shrink-0 whitespace-nowrap rounded-2xl border border-white/25 bg-white/10 px-3 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)] lg:px-4"
+                    className="glass flex min-h-11 min-w-0 flex-1 shrink-0 items-center justify-center whitespace-nowrap rounded-2xl border border-white/25 bg-white/10 px-3 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)] sm:min-h-0 sm:flex-none lg:px-4"
                   >
                     Profile
                   </Link>
                 </div>
               ) : (
-                <div className="flex shrink-0 flex-nowrap items-center gap-2 lg:gap-3">
+                <div className="col-span-3 flex min-w-0 flex-nowrap items-center gap-2 sm:shrink-0 lg:gap-3">
                   <Link
                     href="/login"
-                    className="glass shrink-0 whitespace-nowrap rounded-lg px-3 py-1 text-sm font-medium text-[var(--text)] hover:text-[var(--text)]"
+                    className="glass flex min-h-11 min-w-0 flex-1 shrink-0 items-center justify-center whitespace-nowrap rounded-lg px-3 py-2 text-sm font-medium text-[var(--text)] hover:text-[var(--text)] sm:min-h-0 sm:flex-none sm:py-1"
                   >
                     Login
                   </Link>
@@ -302,14 +427,14 @@ export function HomePage({ items }: HomePageProps) {
               )}
               <a
                 href="#recent-items"
-                className="glass shrink-0 whitespace-nowrap rounded-2xl border border-white/25 bg-white/10 px-3 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)] lg:px-4"
+                className="glass col-span-3 flex min-h-11 min-w-0 shrink-0 items-center justify-center whitespace-nowrap rounded-2xl border border-white/25 bg-white/10 px-3 py-2 text-sm font-medium text-[var(--text)] shadow-[0_8px_24px_-18px_rgba(59,130,246,0.65)] hover:text-[var(--text)] sm:min-h-0 lg:px-4"
               >
                 Browse Items
               </a>
               <button
                 type="button"
                 onClick={() => handleProtectedNavigation("/report-found")}
-                className="navbar-action-button btn-success group relative isolate shrink-0 overflow-hidden whitespace-nowrap rounded-2xl border border-cyan-300/25 bg-white/10 px-3 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(34,211,238,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-cyan-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-cyan-200/55 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.2),0_14px_34px_-16px_rgba(34,211,238,0.98),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-cyan-300/22 hover:before:via-blue-400/20 hover:before:to-indigo-400/18 hover:before:opacity-100 lg:px-4"
+                className="navbar-action-button btn-success group relative isolate col-span-2 flex min-h-11 min-w-0 shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-2xl border border-cyan-300/25 bg-white/10 px-2 py-2 text-xs font-medium shadow-[0_8px_24px_-18px_rgba(34,211,238,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-cyan-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-cyan-200/55 hover:shadow-[0_0_0_1px_rgba(34,211,238,0.2),0_14px_34px_-16px_rgba(34,211,238,0.98),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-cyan-300/22 hover:before:via-blue-400/20 hover:before:to-indigo-400/18 hover:before:opacity-100 sm:min-h-0 sm:px-3 sm:text-sm lg:px-4"
               >
                 <span className="relative z-10 block">
                   Report Found
@@ -318,13 +443,15 @@ export function HomePage({ items }: HomePageProps) {
               <button
                 type="button"
                 onClick={() => handleProtectedNavigation("/report-lost")}
-                className="navbar-action-button btn-primary group relative isolate shrink-0 overflow-hidden whitespace-nowrap rounded-2xl border border-pink-300/25 bg-white/10 px-3 py-2 text-sm font-medium shadow-[0_8px_24px_-18px_rgba(244,63,94,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-pink-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-pink-200/55 hover:shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_14px_34px_-16px_rgba(244,63,94,0.96),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-pink-300/20 hover:before:via-blue-400/18 hover:before:to-indigo-400/18 hover:before:opacity-100 lg:px-4"
+                className="navbar-action-button btn-primary group relative isolate col-span-2 flex min-h-11 min-w-0 shrink-0 items-center justify-center overflow-hidden whitespace-nowrap rounded-2xl border border-pink-300/25 bg-white/10 px-2 py-2 text-xs font-medium shadow-[0_8px_24px_-18px_rgba(244,63,94,0.75)] before:absolute before:inset-0 before:-z-10 before:bg-gradient-to-r before:from-pink-300/0 before:via-blue-400/0 before:to-indigo-400/0 before:opacity-0 hover:border-pink-200/55 hover:shadow-[0_0_0_1px_rgba(96,165,250,0.2),0_14px_34px_-16px_rgba(244,63,94,0.96),0_0_34px_-14px_rgba(79,70,229,0.86)] hover:before:bg-gradient-to-r hover:before:from-pink-300/20 hover:before:via-blue-400/18 hover:before:to-indigo-400/18 hover:before:opacity-100 sm:min-h-0 sm:px-3 sm:text-sm lg:px-4"
               >
                 <span className="relative z-10 block">
                   Report Lost
                 </span>
               </button>
-              <ThemeToggle />
+              <div className="col-span-2 min-w-0 sm:contents">
+                <ThemeToggle />
+              </div>
             </nav>
           </div>
         </header>
