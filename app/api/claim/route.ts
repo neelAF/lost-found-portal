@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { isValidObjectId } from "mongoose";
 
 import { authOptions } from "@/lib/auth";
-import { getClaimsForUser, normalizeClaim } from "@/lib/claims";
+import { getClaimsForUser, normalizeClaimWithContext } from "@/lib/claims";
 import { connectToDatabase } from "@/lib/mongodb";
 import { isItemOwner } from "@/lib/lost-item-shared";
 import { LostItemModel } from "@/models/LostItem";
@@ -19,12 +19,19 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const view = searchParams.get("view");
+    const requestType = searchParams.get("requestType");
 
     await connectToDatabase();
 
     const claims = await getClaimsForUser({
       email: session.user.email,
       mode: view === "received" ? "received" : view === "sent" ? "sent" : "chat",
+      requestType:
+        requestType === "ownership"
+          ? "ownership"
+          : requestType === "finder-response"
+            ? "finder-response"
+            : undefined,
     });
 
     return NextResponse.json(claims);
@@ -72,18 +79,23 @@ export async function POST(request: Request) {
     }
 
     if (item.status === "resolved") {
-      return NextResponse.json({ error: "Resolved items cannot be claimed." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Resolved items cannot receive new requests." },
+        { status: 400 },
+      );
     }
+
+    const requesterEmail = session.user.email.toLowerCase();
 
     const existingClaim = await ClaimModel.findOne({
       itemId,
-      ownerEmail: session.user.email.toLowerCase(),
+      ownerEmail: requesterEmail,
       status: { $in: ["pending", "approved", "completed"] },
     }).lean();
 
     if (existingClaim) {
       return NextResponse.json(
-        { error: "You already have an active claim for this item." },
+        { error: "You already have an active request for this item." },
         { status: 409 },
       );
     }
@@ -91,13 +103,14 @@ export async function POST(request: Request) {
     const claim = await ClaimModel.create({
       itemId,
       itemTitle: item.title,
+      requestType: item.type === "lost" ? "finder-response" : "ownership",
       ownerEmail: session.user.email,
       finderEmail: item.userEmail,
       message,
       status: "pending",
     });
 
-    return NextResponse.json({ claim: normalizeClaim(claim) }, { status: 201 });
+    return NextResponse.json({ claim: await normalizeClaimWithContext(claim) }, { status: 201 });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unable to create claim right now.";

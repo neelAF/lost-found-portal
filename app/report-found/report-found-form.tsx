@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useState, useTransition } from "react";
+import { FormEvent, useEffect, useState, useTransition } from "react";
+
+import { ReportSuccessConfirmation } from "@/app/components/report-success-confirmation";
+import type { LostItem } from "@/lib/lost-item-shared";
 
 const initialForm = {
   type: "found" as const,
@@ -12,13 +15,34 @@ const initialForm = {
   contactNumber: "",
 };
 
+type ReportConfirmation = {
+  itemTitle: string;
+  sentAt: string;
+};
+
 export function ReportFoundForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState(initialForm);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [error, setError] = useState("");
+  const [successConfirmation, setSuccessConfirmation] = useState<ReportConfirmation | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!successConfirmation) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      startTransition(() => {
+        router.push("/");
+        router.refresh();
+      });
+    }, 2600);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [router, startTransition, successConfirmation]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -28,6 +52,7 @@ export function ReportFoundForm() {
     }
 
     setError("");
+    setSuccessConfirmation(null);
     setIsSubmitting(true);
 
     const payload = new FormData();
@@ -53,11 +78,13 @@ export function ReportFoundForm() {
         return;
       }
 
+      const data = (await response.json().catch(() => null)) as { item?: LostItem } | null;
+
       setFormData(initialForm);
       setImageFile(null);
-      startTransition(() => {
-        router.push("/");
-        router.refresh();
+      setSuccessConfirmation({
+        itemTitle: data?.item?.title ?? formData.title,
+        sentAt: data?.item?.createdAt ?? new Date().toISOString(),
       });
     } catch {
       setError("Unable to submit your report right now.");
@@ -195,6 +222,7 @@ export function ReportFoundForm() {
                   setFormData(initialForm);
                   setImageFile(null);
                   setError("");
+                  setSuccessConfirmation(null);
                 }}
                 className="form-clear-btn recent-action-btn delete-item-btn btn-danger min-h-13 rounded-[1.35rem] px-6 py-4 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
               >
@@ -211,6 +239,13 @@ export function ReportFoundForm() {
           </form>
         </div>
       </div>
+      {successConfirmation ? (
+        <ReportSuccessConfirmation
+          type="found"
+          itemTitle={successConfirmation.itemTitle}
+          sentAt={successConfirmation.sentAt}
+        />
+      ) : null}
     </main>
   );
 }

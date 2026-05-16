@@ -4,7 +4,7 @@ import { isValidObjectId } from "mongoose";
 
 import { authOptions } from "@/lib/auth";
 import { isClaimParticipant } from "@/lib/claim-shared";
-import { getMessagesForClaim, normalizeClaim, normalizeMessage } from "@/lib/claims";
+import { getMessagesForClaim, normalizeClaimWithContext, normalizeMessage } from "@/lib/claims";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ClaimModel } from "@/models/Claim";
 import { MessageModel } from "@/models/Message";
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Claim not found." }, { status: 404 });
     }
 
-    const normalizedClaim = normalizeClaim(claim);
+    const normalizedClaim = await normalizeClaimWithContext(claim);
 
     if (!isClaimParticipant(normalizedClaim, session.user.email)) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Claim not found." }, { status: 404 });
     }
 
-    const normalizedClaim = normalizeClaim(claim);
+    const normalizedClaim = await normalizeClaimWithContext(claim);
 
     if (!isClaimParticipant(normalizedClaim, session.user.email)) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });

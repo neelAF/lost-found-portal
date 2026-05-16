@@ -1,4 +1,5 @@
 import { connectToDatabase, isDatabaseConfigured } from "@/lib/mongodb";
+import { ClaimModel } from "@/models/Claim";
 import { LostItemModel } from "@/models/LostItem";
 import type { LostItem, LostItemStatus, LostItemType } from "@/lib/lost-item-shared";
 
@@ -30,6 +31,12 @@ type LostItemSource = {
   userEmail?: string;
   image?: string;
   createdAt: Date | string;
+};
+
+export type LostFoundStats = {
+  resolvedItemsCount: number;
+  studentsHelpedCount: number;
+  campusLocationsCount: number;
 };
 
 export function normalizeLostItem(
@@ -97,6 +104,71 @@ export async function getLostItems(options: GetLostItemsOptions = {}): Promise<L
   return items.map((item) =>
     normalizeLostItem(item, { includeContactNumber: options.includeContactNumber }),
   );
+}
+
+export async function getResolvedItemsCount() {
+  if (!isDatabaseConfigured()) {
+    return 0;
+  }
+
+  await connectToDatabase();
+
+  return LostItemModel.countDocuments({ status: "resolved" });
+}
+
+export async function getLostFoundStats(): Promise<LostFoundStats> {
+  if (!isDatabaseConfigured()) {
+    return {
+      resolvedItemsCount: 0,
+      studentsHelpedCount: 0,
+      campusLocationsCount: 0,
+    };
+  }
+
+  await connectToDatabase();
+
+  const [resolvedItemsCount, resolvedItems, campusLocations] = await Promise.all([
+    LostItemModel.countDocuments({ status: "resolved" }),
+    LostItemModel.find({ status: "resolved" }).select("_id userEmail").lean(),
+    LostItemModel.distinct("location", { location: { $nin: ["", null] } }),
+  ]);
+  const resolvedItemIds = resolvedItems.map((item) => item._id.toString());
+  const relatedClaims = resolvedItemIds.length
+    ? await ClaimModel.find({
+        itemId: { $in: resolvedItemIds },
+        status: { $in: ["approved", "completed"] },
+      })
+        .select("ownerEmail finderEmail")
+        .lean()
+    : [];
+  const helpedEmails = new Set<string>();
+
+  resolvedItems.forEach((item) => {
+    const email = item.userEmail?.trim().toLowerCase();
+
+    if (email) {
+      helpedEmails.add(email);
+    }
+  });
+
+  relatedClaims.forEach((claim) => {
+    const ownerEmail = claim.ownerEmail?.trim().toLowerCase();
+    const finderEmail = claim.finderEmail?.trim().toLowerCase();
+
+    if (ownerEmail) {
+      helpedEmails.add(ownerEmail);
+    }
+
+    if (finderEmail) {
+      helpedEmails.add(finderEmail);
+    }
+  });
+
+  return {
+    resolvedItemsCount,
+    studentsHelpedCount: helpedEmails.size,
+    campusLocationsCount: campusLocations.filter((location) => String(location).trim()).length,
+  };
 }
 
 export async function addLostItem(input: LostItemInput): Promise<LostItem> {

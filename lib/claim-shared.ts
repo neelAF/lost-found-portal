@@ -1,9 +1,15 @@
 export type ClaimStatus = "pending" | "approved" | "rejected" | "completed";
+export type ClaimRequestType = "ownership" | "finder-response";
 
 export type Claim = {
   id: string;
   itemId: string;
   itemTitle: string;
+  itemType?: "lost" | "found";
+  itemLocation?: string;
+  requestType?: ClaimRequestType;
+  requesterName?: string;
+  requesterImage?: string;
   ownerEmail: string;
   finderEmail: string;
   message: string;

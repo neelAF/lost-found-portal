@@ -47,6 +47,7 @@ type ItemCardProps = {
   canResolve?: boolean;
   canDelete?: boolean;
   canClaim?: boolean;
+  canReportFound?: boolean;
   isBusy?: boolean;
   usePremiumActionHover?: boolean;
   usePremiumCardHover?: boolean;
@@ -55,6 +56,7 @@ type ItemCardProps = {
   onResolve?: (itemId: string) => void | Promise<void>;
   onDelete?: (itemId: string) => void | Promise<void>;
   onClaim?: (item: LostItem) => void;
+  onReportFound?: (item: LostItem) => void;
 };
 
 function CheckCircleIcon() {
@@ -163,6 +165,7 @@ export function ItemCard({
   canResolve = false,
   canDelete = false,
   canClaim = false,
+  canReportFound = false,
   isBusy = false,
   usePremiumActionHover = false,
   usePremiumCardHover = false,
@@ -171,14 +174,20 @@ export function ItemCard({
   onResolve,
   onDelete,
   onClaim,
+  onReportFound,
 }: ItemCardProps) {
-  const showActions = canResolve || canDelete || canClaim;
+  const canShowClaimAction = canClaim && item.type === "found";
+  const canShowFoundAction = canReportFound && item.type === "lost";
+  const showActions = canResolve || canDelete || canShowClaimAction || canShowFoundAction;
   const premiumActionClass = usePremiumActionHover ? "recent-action-btn " : "";
   const profileResolvedClass = usePremiumActionHover ? "profile-resolved-btn " : "";
   const resolveColorClass = usePremiumActionHover ? "btn-success" : "btn-primary";
-  const claimButtonClassName = useRecentActionStyle
+  const primaryActionButtonClassName = useRecentActionStyle
     ? "recent-action-btn btn-accent w-full gap-2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
     : `${premiumActionClass}btn-accent w-full gap-2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-50`;
+  const foundActionButtonClassName = useRecentActionStyle
+    ? "recent-action-btn btn-success w-full gap-2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+    : `${premiumActionClass}btn-success w-full gap-2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-50`;
   const resolveButtonClassName = useRecentActionStyle
     ? "recent-resolved-btn mark-resolved-btn recent-action-btn btn-success w-full gap-2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
     : `mark-resolved-btn ${profileResolvedClass}${premiumActionClass}${resolveColorClass} w-full gap-2 rounded-xl px-4 py-2.5 text-sm font-medium shadow-sm active:scale-95 disabled:cursor-not-allowed disabled:opacity-50`;
@@ -269,14 +278,25 @@ export function ItemCard({
                   : "mt-4 flex gap-3 border-t border-[var(--border)] pt-4"
               }
             >
-              {canClaim ? (
+              {canShowClaimAction ? (
                 <button
                   type="button"
                   disabled={item.status === "resolved" || isBusy}
                   onClick={() => onClaim?.(item)}
-                  className={claimButtonClassName}
+                  className={primaryActionButtonClassName}
                 >
                   Claim Item
+                </button>
+              ) : null}
+
+              {canShowFoundAction ? (
+                <button
+                  type="button"
+                  disabled={item.status === "resolved" || isBusy}
+                  onClick={() => onReportFound?.(item)}
+                  className={foundActionButtonClassName}
+                >
+                  I Found This
                 </button>
               ) : null}
 

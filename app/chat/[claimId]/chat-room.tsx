@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { Claim, ChatMessage } from "@/lib/claim-shared";
 
@@ -14,6 +14,22 @@ function formatTime(value: string) {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(value));
+}
+
+function getWorkflowLabel(claim: Claim | null) {
+  return claim?.itemType === "lost" ? "Finder Response Chat" : "Ownership Claim Chat";
+}
+
+function getParticipantLabel(claim: Claim | null, email: string) {
+  if (!claim) {
+    return "Participant";
+  }
+
+  if (claim.itemType === "lost") {
+    return email === claim.ownerEmail ? "Finder" : "Owner";
+  }
+
+  return email === claim.ownerEmail ? "Claimant" : "Finder";
 }
 
 export function ChatRoom() {
@@ -31,16 +47,20 @@ export function ChatRoom() {
   const [isCompleting, setIsCompleting] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const fetchChat = useCallback(
+    async (options?: { signal?: AbortSignal; silent?: boolean }) => {
+      if (!claimId) {
+        return;
+      }
 
-    const fetchChat = async () => {
       try {
-        setIsLoading(true);
+        if (!options?.silent) {
+          setIsLoading(true);
+        }
         setError("");
 
         const response = await fetch(`/api/messages?claimId=${claimId}`, {
-          signal: controller.signal,
+          signal: options?.signal,
           cache: "no-store",
         });
 
@@ -56,21 +76,40 @@ export function ChatRoom() {
         setMessages(payload.messages);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
-          setError((error as Error).message || "Unable to load chat right now.");
+          if (!options?.silent) {
+            setError((error as Error).message || "Unable to load chat right now.");
+          }
         }
       } finally {
-        if (!controller.signal.aborted) {
+        if (!options?.signal?.aborted && !options?.silent) {
           setIsLoading(false);
         }
       }
-    };
+    },
+    [claimId],
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
 
     if (claimId) {
-      void fetchChat();
+      void fetchChat({ signal: controller.signal });
     }
 
     return () => controller.abort();
-  }, [claimId]);
+  }, [claimId, fetchChat]);
+
+  useEffect(() => {
+    if (!claimId) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void fetchChat({ silent: true });
+    }, 2500);
+
+    return () => window.clearInterval(intervalId);
+  }, [claimId, fetchChat]);
 
   const otherParticipant = useMemo(() => {
     if (!claim || !currentUserEmail) {
@@ -159,13 +198,15 @@ export function ChatRoom() {
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
-                Private chat
+                {getWorkflowLabel(claim)}
               </p>
               <h1 className="mt-2 text-3xl font-semibold text-[var(--text)]">
-                {claim?.itemTitle ?? "Claim Conversation"}
+                {claim?.itemTitle ?? "Item Conversation"}
               </h1>
               <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
-                {otherParticipant ? `Chatting with ${otherParticipant}` : "Loading participant..."}
+                {otherParticipant
+                  ? `Chatting with ${getParticipantLabel(claim, otherParticipant)}: ${otherParticipant}`
+                  : "Loading participant..."}
               </p>
             </div>
             <div className="flex flex-wrap gap-3">

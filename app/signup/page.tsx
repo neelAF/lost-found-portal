@@ -5,6 +5,8 @@ import { signIn, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 
+import { PasswordInput } from "@/app/components/password-input";
+
 export default function SignupPage() {
   const router = useRouter();
   const { status } = useSession();
@@ -113,14 +115,13 @@ export default function SignupPage() {
               >
                 Password
               </label>
-              <input
+              <PasswordInput
                 id="password"
-                type="password"
                 required
                 minLength={6}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className="glass-input w-full rounded-[1.35rem] px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--success)]"
+                inputClassName="placeholder:text-[var(--text-muted)] focus:border-[var(--success)]"
                 placeholder="At least 6 characters"
               />
             </div>

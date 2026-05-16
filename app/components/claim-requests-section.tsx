@@ -1,32 +1,59 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import type { Claim } from "@/lib/claim-shared";
 
 type ClaimRequestsSectionProps = {
   showHeader?: boolean;
+  variant?: "ownership" | "finder-response";
 };
 
-export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSectionProps) {
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
+function getProfileInitial(claim: Claim) {
+  return (claim.requesterName || claim.ownerEmail).trim().charAt(0).toUpperCase() || "U";
+}
+
+export function ClaimRequestsSection({
+  showHeader = true,
+  variant = "ownership",
+}: ClaimRequestsSectionProps) {
+  const isFinderResponse = variant === "finder-response";
   const [claims, setClaims] = useState<Claim[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingClaimId, setPendingClaimId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const controller = new AbortController();
-
-    const fetchClaims = async () => {
+  const fetchClaims = useCallback(
+    async (options?: { signal?: AbortSignal; silent?: boolean }) => {
       try {
-        setIsLoading(true);
-        setError("");
+        if (!options?.silent) {
+          setIsLoading(true);
+        }
+        if (!options?.silent) {
+          setError("");
+        }
 
-        const response = await fetch("/api/claim?view=received", {
-          signal: controller.signal,
-          cache: "no-store",
-        });
+        const response = await fetch(
+          `/api/claim?view=received&requestType=${
+            isFinderResponse ? "finder-response" : "ownership"
+          }`,
+          {
+            signal: options?.signal,
+            cache: "no-store",
+          },
+        );
 
         if (!response.ok) {
           throw new Error("Unable to fetch claims.");
@@ -36,19 +63,38 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
         setClaims(data);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
-          setError("Unable to load claim requests right now.");
+          if (!options?.silent) {
+            setError(
+              isFinderResponse
+                ? "Unable to load finder responses right now."
+                : "Unable to load ownership claims right now.",
+            );
+          }
         }
       } finally {
-        if (!controller.signal.aborted) {
+        if (!options?.signal?.aborted && !options?.silent) {
           setIsLoading(false);
         }
       }
-    };
+    },
+    [isFinderResponse],
+  );
 
-    void fetchClaims();
+  useEffect(() => {
+    const controller = new AbortController();
+
+    void fetchClaims({ signal: controller.signal });
 
     return () => controller.abort();
-  }, []);
+  }, [fetchClaims]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void fetchClaims({ silent: true });
+    }, 8000);
+
+    return () => window.clearInterval(intervalId);
+  }, [fetchClaims]);
 
   async function handleAction(claimId: string, action: "approve" | "reject") {
     setPendingClaimId(claimId);
@@ -74,6 +120,7 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
       setClaims((current) =>
         current.map((claim) => (claim.id === payload.claim?.id ? payload.claim : claim)),
       );
+      void fetchClaims({ silent: true });
     } catch (error) {
       setError((error as Error).message || "Unable to update claim right now.");
     } finally {
@@ -86,12 +133,15 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
       {showHeader ? (
         <>
           <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
-            Finder workflow
+            {isFinderResponse ? "Owner workflow" : "Finder workflow"}
           </p>
-          <h2 className="mt-2 text-3xl font-semibold text-[var(--text)]">Claim Requests</h2>
+          <h2 className="mt-2 text-3xl font-semibold text-[var(--text)]">
+            {isFinderResponse ? "Finder Responses" : "Ownership Claims"}
+          </h2>
           <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
-            Review incoming claim requests, approve the right one, and move the conversation into
-            chat.
+            {isFinderResponse
+              ? "Review responses from people who found your lost items and move trusted matches into chat."
+              : "Review incoming claim requests, approve the right one, and move the conversation into chat."}
           </p>
         </>
       ) : null}
@@ -104,7 +154,7 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
 
       {isLoading ? (
         <div className="mt-8 rounded-[1.5rem] panel-muted border-dashed px-6 py-10 text-center">
-          Loading claim requests...
+          {isFinderResponse ? "Loading finder responses..." : "Loading ownership claims..."}
         </div>
       ) : claims.length ? (
         <div className="mt-8 grid gap-4 lg:grid-cols-2">
@@ -118,7 +168,32 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] eyebrow">
                     {claim.itemTitle}
                   </p>
-                  <h3 className="mt-2 text-lg font-semibold text-[var(--text)]">{claim.ownerEmail}</h3>
+                  <div className="mt-3 flex items-center gap-3">
+                    <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-sm font-bold text-[var(--on-accent)] shadow-lg shadow-[var(--shadow)] ring-1 ring-white/20">
+                      {claim.requesterImage ? (
+                        <Image
+                          src={claim.requesterImage}
+                          alt=""
+                          fill
+                          sizes="44px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        getProfileInitial(claim)
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-[var(--text)]">
+                        {isFinderResponse ? "Finder" : "Claimant"}:{" "}
+                        {claim.requesterName || claim.ownerEmail}
+                      </h3>
+                      {claim.requesterName ? (
+                        <p className="mt-1 text-xs font-medium text-[var(--text-secondary)]">
+                          {claim.ownerEmail}
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] ${
@@ -134,7 +209,14 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
               </div>
 
               <p className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]">
-                {claim.message || "No initial message provided."}
+                {claim.message ||
+                  (isFinderResponse
+                    ? "No found details provided."
+                    : "No initial message provided.")}
+              </p>
+
+              <p className="mt-3 text-xs font-medium text-[var(--text-secondary)]">
+                Submitted {formatDate(claim.createdAt)}
               </p>
 
               <div className="mt-5 flex flex-wrap gap-3">
@@ -144,7 +226,11 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
                   onClick={() => void handleAction(claim.id, "approve")}
                   className="claim-approve-btn btn-success min-h-11 rounded-2xl px-4 py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-70"
                 >
-                  {pendingClaimId === claim.id ? "Working..." : "Approve"}
+                  {pendingClaimId === claim.id
+                    ? "Working..."
+                    : isFinderResponse
+                      ? "Accept"
+                      : "Approve"}
                 </button>
                 <button
                   type="button"
@@ -168,7 +254,7 @@ export function ClaimRequestsSection({ showHeader = true }: ClaimRequestsSection
         </div>
       ) : (
         <div className="mt-8 rounded-[1.5rem] panel-muted border-dashed px-6 py-10 text-center">
-          No claim requests yet.
+          {isFinderResponse ? "No finder responses yet." : "No ownership claims yet."}
         </div>
       )}
     </section>

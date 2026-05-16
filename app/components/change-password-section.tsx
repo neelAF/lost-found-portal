@@ -3,6 +3,8 @@
 import { useSession } from "next-auth/react";
 import { FormEvent, useState } from "react";
 
+import { PasswordInput } from "@/app/components/password-input";
+
 type ChangePasswordSectionProps = {
   showHeader?: boolean;
 };
@@ -83,13 +85,11 @@ export function ChangePasswordSection({ showHeader = true }: ChangePasswordSecti
           <label htmlFor="oldPassword" className="mb-2 block text-sm font-semibold text-[var(--text)]">
             Old Password
           </label>
-          <input
+          <PasswordInput
             id="oldPassword"
-            type="password"
             required
             value={oldPassword}
             onChange={(event) => setOldPassword(event.target.value)}
-            className="w-full rounded-[1.35rem] glass-input px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--primary)]"
             placeholder="Enter your current password"
           />
         </div>
@@ -98,14 +98,12 @@ export function ChangePasswordSection({ showHeader = true }: ChangePasswordSecti
           <label htmlFor="newPassword" className="mb-2 block text-sm font-semibold text-[var(--text)]">
             New Password
           </label>
-          <input
+          <PasswordInput
             id="newPassword"
-            type="password"
             required
             minLength={6}
             value={newPassword}
             onChange={(event) => setNewPassword(event.target.value)}
-            className="w-full rounded-[1.35rem] glass-input px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)] focus:border-[var(--primary)]"
             placeholder="At least 6 characters"
           />
         </div>

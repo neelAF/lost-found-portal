@@ -863,6 +863,191 @@ html[data-theme="dark"] .claim-modal-panel::before {
     linear-gradient(180deg, rgba(255, 255, 255, 0.07), transparent 52%);
 }
 
+.success-confirmation-backdrop {
+  background:
+    radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--success) 18%, transparent), transparent 34%),
+    rgba(2, 6, 23, 0.38);
+  backdrop-filter: blur(12px) saturate(128%);
+  -webkit-backdrop-filter: blur(12px) saturate(128%);
+  animation: success-backdrop-in 220ms ease-out both;
+}
+
+.success-confirmation-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(241, 245, 249, 0.84)),
+    rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 48px 120px -44px color-mix(in srgb, var(--success) 44%, rgba(15, 23, 42, 0.42)),
+    0 22px 58px -30px rgba(15, 23, 42, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(24px) saturate(142%);
+  -webkit-backdrop-filter: blur(24px) saturate(142%);
+  animation: success-card-in 620ms cubic-bezier(0.16, 1.2, 0.28, 1) both;
+}
+
+.success-confirmation-card::before,
+.success-confirmation-card::after {
+  position: absolute;
+  inset: auto;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+
+.success-confirmation-card::before {
+  top: -22%;
+  left: 50%;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--success) 22%, transparent), transparent 64%);
+  filter: blur(2px);
+  transform: translateX(-50%);
+  animation: success-glow-pulse 1800ms ease-in-out infinite;
+}
+
+.success-confirmation-card::after {
+  inset: 1rem;
+  border-radius: 1.55rem;
+  background:
+    radial-gradient(circle at 18% 28%, color-mix(in srgb, var(--success) 24%, transparent) 0 0.18rem, transparent 0.22rem),
+    radial-gradient(circle at 80% 24%, rgba(56, 189, 248, 0.24) 0 0.16rem, transparent 0.2rem),
+    radial-gradient(circle at 74% 78%, rgba(129, 140, 248, 0.22) 0 0.15rem, transparent 0.2rem),
+    radial-gradient(circle at 24% 72%, rgba(236, 72, 153, 0.18) 0 0.13rem, transparent 0.18rem);
+  opacity: 0;
+  animation: success-sparkle-pop 1500ms ease-out 180ms both;
+}
+
+.dark .success-confirmation-card,
+html[data-theme="dark"] .success-confirmation-card {
+  background:
+    linear-gradient(180deg, rgba(30, 41, 59, 0.88), rgba(15, 23, 42, 0.80)),
+    rgba(15, 23, 42, 0.80);
+  border-color: rgba(226, 232, 240, 0.26);
+  box-shadow:
+    0 48px 120px -44px color-mix(in srgb, var(--success) 40%, rgba(0, 0, 0, 0.82)),
+    0 22px 58px -30px rgba(0, 0, 0, 0.62),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.success-orbit {
+  position: relative;
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--success) 18%, transparent), transparent 68%),
+    color-mix(in srgb, var(--success) 10%, transparent);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--success) 20%, transparent),
+    0 0 48px -14px color-mix(in srgb, var(--success) 82%, transparent);
+  animation: success-orbit-pulse 1700ms ease-in-out infinite;
+}
+
+.success-check-wrap {
+  background: linear-gradient(135deg, var(--success), var(--success-strong));
+  box-shadow:
+    0 18px 44px -18px color-mix(in srgb, var(--success) 82%, #0f172a),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  animation: success-check-pop 520ms cubic-bezier(0.16, 1.24, 0.32, 1) 120ms both;
+}
+
+.success-check-icon {
+  fill: none;
+  stroke: white;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4.5;
+}
+
+.success-check-circle {
+  opacity: 0.34;
+}
+
+.success-check-path {
+  stroke-dasharray: 36;
+  stroke-dashoffset: 36;
+  animation: success-check-draw 520ms ease-out 360ms forwards;
+}
+
+@keyframes success-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes success-card-in {
+  0% {
+    opacity: 0;
+    transform: translateY(18px) scale(0.88);
+  }
+  58% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.025);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes success-check-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.56) rotate(-10deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes success-check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes success-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: translateX(-50%) scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.08);
+  }
+}
+
+@keyframes success-orbit-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes success-sparkle-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) rotate(-4deg);
+  }
+  28% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.08) rotate(2deg);
+  }
+}
+
 .glass-input {
   background: var(--glass);
   border: 1px solid var(--border);
@@ -874,6 +1059,32 @@ html[data-theme="dark"] .claim-modal-panel::before {
   box-shadow:
     0 0 0 3px var(--ring),
     inset 0 2px 8px var(--input-shadow);
+}
+
+.password-input-shell .glass-input {
+  transition:
+    border-color 0.18s ease-out,
+    box-shadow 0.18s ease-out,
+    background-color 0.18s ease-out;
+}
+
+.password-toggle-button {
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+  backdrop-filter: blur(12px) saturate(124%);
+  -webkit-backdrop-filter: blur(12px) saturate(124%);
+}
+
+.password-toggle-button:not(:disabled):hover,
+.password-toggle-button:not(:disabled):focus-visible {
+  color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  border-color: color-mix(in srgb, var(--primary) 30%, var(--border));
+  box-shadow: 0 10px 28px -18px color-mix(in srgb, var(--primary) 80%, transparent);
+}
+
+.password-toggle-button:not(:disabled):active {
+  transform: translateY(-50%) scale(0.96);
 }
 
 .panel-muted {
@@ -1682,6 +1893,11 @@ body::after {
     -webkit-backdrop-filter: blur(10px) saturate(124%);
   }
 
+  .success-confirmation-card {
+    backdrop-filter: blur(10px) saturate(124%);
+    -webkit-backdrop-filter: blur(10px) saturate(124%);
+  }
+
   body {
     background-size: 118% 118%;
   }
@@ -1766,8 +1982,19 @@ body::after {
 
   body::before,
   .app-background::before,
-  .app-background-layer {
+  .app-background-layer,
+  .success-confirmation-backdrop,
+  .success-confirmation-card,
+  .success-confirmation-card::before,
+  .success-confirmation-card::after,
+  .success-orbit,
+  .success-check-wrap,
+  .success-check-path {
     animation: none;
+  }
+
+  .success-check-path {
+    stroke-dashoffset: 0;
   }
 }
 

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { authOptions } from "@/lib/auth";
 import { isClaimFinder, isClaimParticipant } from "@/lib/claim-shared";
-import { normalizeClaim } from "@/lib/claims";
+import { normalizeClaimWithContext } from "@/lib/claims";
 import { connectToDatabase } from "@/lib/mongodb";
 import { ClaimModel } from "@/models/Claim";
 import { LostItemModel } from "@/models/LostItem";
@@ -37,7 +37,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "Claim not found." }, { status: 404 });
     }
 
-    const normalizedClaim = normalizeClaim(claim);
+    const normalizedClaim = await normalizeClaimWithContext(claim);
 
     if (!isClaimParticipant(normalizedClaim, session.user.email)) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
@@ -84,7 +84,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "Claim not found." }, { status: 404 });
     }
 
-    const normalizedClaim = normalizeClaim(claim);
+    const normalizedClaim = await normalizeClaimWithContext(claim);
 
     if (action === "approve" || action === "reject") {
       if (!isClaimFinder(normalizedClaim, session.user.email)) {
@@ -113,7 +113,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         );
       }
 
-      return NextResponse.json({ claim: normalizeClaim(updatedClaim) });
+      return NextResponse.json({ claim: await normalizeClaimWithContext(updatedClaim) });
     }
 
     if (!isClaimParticipant(normalizedClaim, session.user.email)) {
@@ -140,7 +140,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: "Claim not found." }, { status: 404 });
     }
 
-    return NextResponse.json({ claim: normalizeClaim(completedClaim) });
+    return NextResponse.json({ claim: await normalizeClaimWithContext(completedClaim) });
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "Unable to update claim right now.";

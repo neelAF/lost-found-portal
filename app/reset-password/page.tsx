@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useMemo, useState } from "react";
 
+import { PasswordInput } from "@/app/components/password-input";
+
 export default function ResetPasswordPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -89,14 +91,13 @@ export default function ResetPasswordPage() {
               >
                 New Password
               </label>
-              <input
+              <PasswordInput
                 id="newPassword"
-                type="password"
                 required
                 minLength={6}
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
-                className="w-full rounded-[1.35rem] glass-input px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-muted)] focus:border-[var(--primary)]"
+                inputClassName="placeholder:text-[var(--text-muted)]"
                 placeholder="At least 6 characters"
               />
             </div>

@@ -32,6 +32,13 @@ const claimSchema = new Schema(
       default: "",
       trim: true,
     },
+    requestType: {
+      type: String,
+      enum: ["ownership", "finder-response"],
+      default: "ownership",
+      trim: true,
+      index: true,
+    },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected", "completed"],
@@ -49,5 +56,17 @@ export type ClaimDocument = InferSchemaType<typeof claimSchema> & {
   _id: string;
   createdAt: Date;
 };
+
+if (models.Claim && !models.Claim.schema.path("requestType")) {
+  models.Claim.schema.add({
+    requestType: {
+      type: String,
+      enum: ["ownership", "finder-response"],
+      default: "ownership",
+      trim: true,
+      index: true,
+    },
+  });
+}
 
 export const ClaimModel = models.Claim || model("Claim", claimSchema);

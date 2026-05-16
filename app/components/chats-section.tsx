@@ -9,6 +9,18 @@ type ChatsSectionProps = {
   showHeader?: boolean;
 };
 
+function getWorkflowLabel(claim: Claim) {
+  return claim.itemType === "lost" ? "Finder Response" : "Ownership Claim";
+}
+
+function getPrimaryParticipantLabel(claim: Claim) {
+  return claim.itemType === "lost" ? "Finder" : "Claimant";
+}
+
+function getSecondaryParticipantLabel(claim: Claim) {
+  return claim.itemType === "lost" ? "Owner" : "Finder";
+}
+
 export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -58,7 +70,7 @@ export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
           </p>
           <h2 className="mt-2 text-3xl font-semibold text-[var(--text)]">Chats</h2>
           <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
-            Approved claims become private chats between the claimer and the finder.
+            Approved ownership claims and accepted finder responses become private handoff chats.
           </p>
         </>
       ) : null}
@@ -84,12 +96,18 @@ export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] eyebrow">
-                    {claim.itemTitle}
+                    {getWorkflowLabel(claim)}
                   </p>
                   <h3 className="mt-2 text-lg font-semibold text-[var(--text)]">
-                    {claim.ownerEmail}
+                    {claim.itemTitle}
                   </h3>
-                  <p className="mt-1 text-sm text-[var(--text-muted)]">Finder: {claim.finderEmail}</p>
+                  <p className="mt-2 text-sm text-[var(--text-muted)]">
+                    {getPrimaryParticipantLabel(claim)}:{" "}
+                    {claim.requesterName || claim.ownerEmail}
+                  </p>
+                  <p className="mt-1 text-sm text-[var(--text-muted)]">
+                    {getSecondaryParticipantLabel(claim)}: {claim.finderEmail}
+                  </p>
                 </div>
                 <span
                   className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.22em] badge-success"

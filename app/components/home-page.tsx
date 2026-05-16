@@ -4,16 +4,26 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { Claim } from "@/lib/claim-shared";
 import type { LostItem, LostItemFilter } from "@/lib/lost-item-shared";
+import type { LostFoundStats } from "@/lib/lost-items";
 import { isItemOwner } from "@/lib/lost-item-shared";
 import { ItemCard } from "./item-card";
 import ThemeToggle from "./theme-toggle";
 
 type HomePageProps = {
   items: LostItem[];
+  stats: LostFoundStats;
+};
+
+type ItemResponseMode = "claim" | "found";
+
+type SuccessConfirmation = {
+  mode: ItemResponseMode;
+  itemTitle: string;
+  sentAt: string;
 };
 
 const typeFilters: Array<{ label: string; value: LostItemFilter }> = [
@@ -43,6 +53,15 @@ function buildItemsUrl(type: LostItemFilter, search?: string) {
 
   const query = params.toString();
   return query ? `/api/lost?${query}` : "/api/lost";
+}
+
+function formatConfirmationTime(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 async function fetchFilteredItems(options?: {
@@ -83,7 +102,7 @@ function SearchIcon() {
   );
 }
 
-export function HomePage({ items }: HomePageProps) {
+export function HomePage({ items, stats: homeStats }: HomePageProps) {
   const router = useRouter();
   const { data: session, status: sessionStatus } = useSession();
   const currentUser = session?.user ?? null;
@@ -95,62 +114,92 @@ export function HomePage({ items }: HomePageProps) {
   const [query, setQuery] = useState("");
   const [activeType, setActiveType] = useState<LostItemFilter>("all");
   const [filteredItems, setFilteredItems] = useState(items);
+  const [totalReportsCount, setTotalReportsCount] = useState(items.length);
   const [isLoading, setIsLoading] = useState(false);
   const [pendingItemId, setPendingItemId] = useState<string | null>(null);
-  const [claimingItem, setClaimingItem] = useState<LostItem | null>(null);
-  const [claimMessage, setClaimMessage] = useState("");
-  const [claimError, setClaimError] = useState("");
+  const [responseItem, setResponseItem] = useState<LostItem | null>(null);
+  const [responseMode, setResponseMode] = useState<ItemResponseMode>("claim");
+  const [responseMessage, setResponseMessage] = useState("");
+  const [responseError, setResponseError] = useState("");
+  const [successConfirmation, setSuccessConfirmation] = useState<SuccessConfirmation | null>(null);
   const [actionError, setActionError] = useState("");
   const [authNotice, setAuthNotice] = useState("");
-  const [isSubmittingClaim, setIsSubmittingClaim] = useState(false);
+  const [isSubmittingResponse, setIsSubmittingResponse] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const initialItemsRef = useRef(items);
 
   useEffect(() => {
     initialItemsRef.current = items;
     setFilteredItems(items);
+    setTotalReportsCount(items.length);
   }, [items]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const search = query.trim();
-    const hasTypeFilter = activeType !== "all";
-
-    if (!search && !hasTypeFilter) {
-      setIsLoading(false);
-      setFilteredItems(initialItemsRef.current);
-      return () => controller.abort();
-    }
-
-    const fetchItems = async () => {
+  const refreshVisibleItems = useCallback(
+    async (options?: { signal?: AbortSignal; silent?: boolean }) => {
+      const search = query.trim();
       try {
-        setIsLoading(true);
+        if (!options?.silent) {
+          setIsLoading(true);
+        }
         const nextItems = await fetchFilteredItems({
           search,
           type: activeType,
-          signal: controller.signal,
+          signal: options?.signal,
         });
+
+        if (!search && activeType === "all") {
+          initialItemsRef.current = nextItems;
+          setTotalReportsCount(nextItems.length);
+        }
+
         setFilteredItems(nextItems);
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
-          setFilteredItems([]);
+          if (!options?.silent) {
+            setFilteredItems([]);
+          }
         }
       } finally {
-        if (!controller.signal.aborted) {
+        if (!options?.signal?.aborted && !options?.silent) {
           setIsLoading(false);
         }
       }
-    };
+    },
+    [activeType, query],
+  );
 
-    void fetchItems();
+  useEffect(() => {
+    const controller = new AbortController();
+
+    void refreshVisibleItems({ signal: controller.signal });
 
     return () => controller.abort();
-  }, [activeType, query]);
+  }, [refreshVisibleItems]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      void refreshVisibleItems({ silent: true });
+    }, 10000);
+
+    return () => window.clearInterval(intervalId);
+  }, [refreshVisibleItems]);
+
+  useEffect(() => {
+    if (!successConfirmation) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setSuccessConfirmation(null);
+    }, 3600);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [successConfirmation]);
 
   const stats = [
-    { label: "Items found", value: `${items.length}+`, glow: "stats-glow-blue" },
-    { label: "Students helped", value: "320+", glow: "stats-glow-emerald" },
-    { label: "Campus locations", value: "18", glow: "stats-glow-purple" },
+    { label: "Items found", value: `${homeStats.resolvedItemsCount}+`, glow: "stats-glow-blue" },
+    { label: "Students helped", value: `${homeStats.studentsHelpedCount}+`, glow: "stats-glow-emerald" },
+    { label: "Campus locations", value: `${homeStats.campusLocationsCount}+`, glow: "stats-glow-purple" },
   ];
 
   async function handleMarkAsFound(itemId: string) {
@@ -180,12 +229,7 @@ export function HomePage({ items }: HomePageProps) {
         item.id === data.item?.id ? data.item : item,
       );
 
-      const nextItems = await fetchFilteredItems({
-        search: query,
-        type: activeType,
-      });
-
-      setFilteredItems(nextItems);
+      await refreshVisibleItems({ silent: true });
     } catch (error) {
       setActionError((error as Error).message || "Unable to update the item right now.");
     } finally {
@@ -197,13 +241,30 @@ export function HomePage({ items }: HomePageProps) {
     setActiveType(nextType);
   }
 
-  async function handleClaimSubmit() {
-    if (!claimingItem) {
+  function openItemResponse(item: LostItem, mode: ItemResponseMode) {
+    setResponseError("");
+    setResponseMessage("");
+    setSuccessConfirmation(null);
+    setResponseItem(item);
+    setResponseMode(mode);
+  }
+
+  function closeItemResponse() {
+    setResponseItem(null);
+    setResponseMessage("");
+    setResponseError("");
+  }
+
+  async function handleItemResponseSubmit() {
+    if (!responseItem || isSubmittingResponse) {
       return;
     }
 
-    setClaimError("");
-    setIsSubmittingClaim(true);
+    const submittedMode = responseMode;
+    const submittedItemTitle = responseItem.title;
+
+    setResponseError("");
+    setIsSubmittingResponse(true);
 
     try {
       const response = await fetch("/api/claim", {
@@ -212,8 +273,8 @@ export function HomePage({ items }: HomePageProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          itemId: claimingItem.id,
-          message: claimMessage,
+          itemId: responseItem.id,
+          message: responseMessage,
         }),
       });
 
@@ -222,15 +283,29 @@ export function HomePage({ items }: HomePageProps) {
         | null;
 
       if (!response.ok || !payload?.claim) {
-        throw new Error(payload?.error ?? "Unable to submit claim.");
+        throw new Error(
+          payload?.error ??
+            (responseMode === "found"
+              ? "Unable to submit found details."
+              : "Unable to submit claim."),
+        );
       }
 
-      setClaimingItem(null);
-      setClaimMessage("");
+      closeItemResponse();
+      setSuccessConfirmation({
+        mode: submittedMode,
+        itemTitle: submittedItemTitle,
+        sentAt: payload.claim.createdAt,
+      });
     } catch (error) {
-      setClaimError((error as Error).message || "Unable to submit claim right now.");
+      setResponseError(
+        (error as Error).message ||
+          (responseMode === "found"
+            ? "Unable to submit found details right now."
+            : "Unable to submit claim right now."),
+      );
     } finally {
-      setIsSubmittingClaim(false);
+      setIsSubmittingResponse(false);
     }
   }
 
@@ -575,7 +650,7 @@ export function HomePage({ items }: HomePageProps) {
                 </h3>
               </div>
               <p className="text-sm text-[var(--text-secondary)]">
-                Showing {filteredItems.length} of {items.length} reports
+                Showing {filteredItems.length} of {totalReportsCount} reports
                 {isLoading ? " | Updating..." : ""}
               </p>
             </div>
@@ -593,15 +668,21 @@ export function HomePage({ items }: HomePageProps) {
                   item={item}
                   showContactNumber={Boolean(currentUser)}
                   canResolve={Boolean(currentUser) && isItemOwner(item.userEmail, currentUser?.email)}
-                  canClaim={Boolean(currentUser) && !isItemOwner(item.userEmail, currentUser?.email)}
+                  canClaim={
+                    Boolean(currentUser) &&
+                    item.type === "found" &&
+                    !isItemOwner(item.userEmail, currentUser?.email)
+                  }
+                  canReportFound={
+                    Boolean(currentUser) &&
+                    item.type === "lost" &&
+                    !isItemOwner(item.userEmail, currentUser?.email)
+                  }
                   isBusy={pendingItemId === item.id}
                   useRecentActionStyle
                   onResolve={handleMarkAsFound}
-                  onClaim={(nextItem) => {
-                    setClaimError("");
-                    setClaimMessage("");
-                    setClaimingItem(nextItem);
-                  }}
+                  onClaim={(nextItem) => openItemResponse(nextItem, "claim")}
+                  onReportFound={(nextItem) => openItemResponse(nextItem, "found")}
                 />
               ))}
             </div>
@@ -615,25 +696,22 @@ export function HomePage({ items }: HomePageProps) {
         </main>
       </div>
 
-      {claimingItem ? (
+      {responseItem ? (
         <div className="claim-modal-backdrop fixed inset-0 z-40 flex items-center justify-center px-5">
           <div className="claim-modal-panel w-full max-w-xl rounded-[2rem] p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.3em] eyebrow">
-                  Claim Request
+                  {responseMode === "found" ? "Finder Response" : "Claim Request"}
                 </p>
                 <h3 className="mt-2 text-2xl font-semibold text-[var(--text)]">
-                  Claim {claimingItem.title}
+                  {responseMode === "found" ? "I Found " : "Claim "}
+                  {responseItem.title}
                 </h3>
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setClaimingItem(null);
-                  setClaimMessage("");
-                  setClaimError("");
-                }}
+                onClick={closeItemResponse}
                 className="claim-modal-danger-hover glass inline-flex h-11 w-11 items-center justify-center rounded-full text-[var(--text-secondary)] transition-all duration-150 ease-out"
               >
                 X
@@ -641,52 +719,102 @@ export function HomePage({ items }: HomePageProps) {
             </div>
 
             <p className="mt-4 text-sm leading-7 text-[var(--text-secondary)]">
-              Tell the finder why this item belongs to you. Share details like brand, markings, or
-              what was inside.
+              {responseMode === "found"
+                ? "Share where you found it, when you found it, and any safe handoff details. The owner can review your response before opening a private chat."
+                : "Tell the finder why this item belongs to you. Share details like brand, markings, or what was inside."}
             </p>
 
             <label
-              htmlFor="claim-message"
+              htmlFor="item-response-message"
               className="mt-6 block text-sm font-semibold text-[var(--text)]"
             >
-              Why this is your item?
+              {responseMode === "found" ? "Found item details" : "Why this is your item?"}
             </label>
             <textarea
-              id="claim-message"
+              id="item-response-message"
               rows={6}
-              value={claimMessage}
-              onChange={(event) => setClaimMessage(event.target.value)}
-              placeholder="Example: The bag has my student ID in the front pocket and a blue charger inside."
+              value={responseMessage}
+              onChange={(event) => setResponseMessage(event.target.value)}
+              placeholder={
+                responseMode === "found"
+                  ? "Example: I found it near the library entrance around 4 PM. The item has a small scratch near the zip."
+                  : "Example: The bag has my student ID in the front pocket and a blue charger inside."
+              }
               className="glass-input mt-2 w-full rounded-[1.35rem] px-4 py-4 text-sm text-[var(--text)] outline-none placeholder:text-[var(--text-secondary)] focus:ring-2 focus:ring-[var(--primary)]"
             />
 
-            {claimError ? (
+            {responseError ? (
               <div className="mt-4 rounded-[1.25rem] alert-error px-4 py-3 text-sm">
-                {claimError}
+                {responseError}
               </div>
             ) : null}
 
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                onClick={() => {
-                  setClaimingItem(null);
-                  setClaimMessage("");
-                  setClaimError("");
-                }}
+                onClick={closeItemResponse}
                 className="claim-modal-danger-hover glass rounded-xl px-4 py-2 text-sm font-medium text-[var(--text)] transition-all duration-150 ease-out"
               >
                 Cancel
               </button>
               <button
                 type="button"
-                onClick={() => void handleClaimSubmit()}
-                disabled={isSubmittingClaim}
-                className="claim-send-request-btn recent-action-btn btn-accent rounded-xl px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-70"
+                onClick={() => void handleItemResponseSubmit()}
+                disabled={isSubmittingResponse}
+                className={`claim-send-request-btn recent-action-btn ${
+                  responseMode === "found" ? "btn-success" : "btn-accent"
+                } rounded-xl px-4 py-2 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-70`}
               >
-                {isSubmittingClaim ? "Submitting..." : "Send Claim Request"}
+                {isSubmittingResponse
+                  ? "Submitting..."
+                  : responseMode === "found"
+                    ? "Send Found Details"
+                    : "Send Claim Request"}
               </button>
             </div>
+          </div>
+        </div>
+      ) : null}
+
+      {successConfirmation ? (
+        <div
+          className="success-confirmation-backdrop fixed inset-0 z-40 flex items-center justify-center px-5"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          <div className="success-confirmation-card w-full max-w-md rounded-[2rem] p-7 text-center sm:p-8">
+            <div className="success-orbit mx-auto flex h-24 w-24 items-center justify-center rounded-full">
+              <div className="success-check-wrap flex h-16 w-16 items-center justify-center rounded-full">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 52 52"
+                  className="success-check-icon h-12 w-12"
+                >
+                  <circle className="success-check-circle" cx="26" cy="26" r="23" />
+                  <path className="success-check-path" d="M15 27.5 22.5 35 38 18.5" />
+                </svg>
+              </div>
+            </div>
+
+            <p className="mt-5 text-sm font-semibold uppercase tracking-[0.28em] eyebrow">
+              Request submitted
+            </p>
+            <h3 className="mt-2 text-2xl font-semibold text-[var(--text)]">
+              {successConfirmation.mode === "found"
+                ? "Found Details Sent Successfully"
+                : "Claim Request Sent Successfully"}
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-[var(--text-secondary)]">
+              {successConfirmation.mode === "found"
+                ? "You can track updates in Finder Responses."
+                : "You can track updates in Ownership Claims."}
+            </p>
+            <p className="mt-3 text-xs font-semibold uppercase tracking-[0.22em] text-[var(--success)]">
+              Sent {formatConfirmationTime(successConfirmation.sentAt)}
+            </p>
+            <p className="mt-4 truncate rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 py-2 text-xs font-semibold text-[var(--text-secondary)]">
+              {successConfirmation.itemTitle}
+            </p>
           </div>
         </div>
       ) : null}

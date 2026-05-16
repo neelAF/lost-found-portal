@@ -25,11 +25,12 @@ type AvatarUploadResponse = {
   error?: string;
 };
 
-type ProfileTab = "items" | "claims" | "chats" | "password";
+type ProfileTab = "items" | "claims" | "finderResponses" | "chats" | "password";
 
 const profileNavItems: Array<{ label: string; value: ProfileTab }> = [
   { label: "My Items", value: "items" },
-  { label: "Claim Requests", value: "claims" },
+  { label: "Ownership Claims", value: "claims" },
+  { label: "Finder Responses", value: "finderResponses" },
   { label: "Chats", value: "chats" },
   { label: "Change Password", value: "password" },
 ];
@@ -255,7 +256,7 @@ export function ProfileForm() {
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold text-[var(--text)]">Account Profile</h1>
             <p className="text-sm font-medium text-[var(--text-secondary)]">
-              Manage your account, profile info, claim requests, chats and more.
+              Manage your account, profile info, ownership claims, finder responses, chats and more.
             </p>
           </div>
           <Link
@@ -395,6 +396,8 @@ export function ProfileForm() {
                   />
                 ) : activeTab === "claims" ? (
                   <ClaimRequestsSection showHeader={false} />
+                ) : activeTab === "finderResponses" ? (
+                  <ClaimRequestsSection showHeader={false} variant="finder-response" />
                 ) : activeTab === "chats" ? (
                   <ChatsSection showHeader={false} />
                 ) : (

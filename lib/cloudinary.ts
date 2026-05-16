@@ -1,16 +1,35 @@
 import { v2 as cloudinary } from "cloudinary";
 
 let isConfigured = false;
+const itemImageFolder = "lost-found-portal";
+
+type CloudinaryUnsignedUploadResponse = {
+  secure_url?: string;
+  error?: {
+    message?: string;
+  };
+};
 
 function configureCloudinary() {
   if (isConfigured) {
     return;
   }
 
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-  const cloudinaryUrl = process.env.CLOUDINARY_URL;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
+  const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
+  const cloudinaryUrl = process.env.CLOUDINARY_URL?.trim();
+
+  if (cloudName && apiKey && apiSecret) {
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+      secure: true,
+    });
+    isConfigured = true;
+    return;
+  }
 
   if (cloudinaryUrl) {
     cloudinary.config({ secure: true });
@@ -23,18 +42,37 @@ function configureCloudinary() {
       "Cloudinary is not configured. Please set CLOUDINARY_URL or CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.",
     );
   }
-
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-    secure: true,
-  });
-
-  isConfigured = true;
 }
 
-export async function uploadImageToCloudinary(file: File) {
+async function uploadImageWithPreset(file: File) {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET?.trim();
+
+  if (!cloudName || !uploadPreset) {
+    throw new Error("Cloudinary upload preset is not configured.");
+  }
+
+  const formData = new FormData();
+  formData.set("file", file);
+  formData.set("upload_preset", uploadPreset);
+  formData.set("folder", itemImageFolder);
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: "POST",
+    body: formData,
+  });
+  const payload = (await response.json().catch(() => null)) as
+    | CloudinaryUnsignedUploadResponse
+    | null;
+
+  if (!response.ok || !payload?.secure_url) {
+    throw new Error(payload?.error?.message ?? "Cloudinary upload failed.");
+  }
+
+  return payload.secure_url;
+}
+
+async function uploadImageWithSignedStream(file: File) {
   configureCloudinary();
 
   const bytes = await file.arrayBuffer();
@@ -43,7 +81,7 @@ export async function uploadImageToCloudinary(file: File) {
   return new Promise<string>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: "lost-found-portal",
+        folder: itemImageFolder,
         resource_type: "image",
       },
       (error, result) => {
@@ -70,4 +108,19 @@ export async function uploadImageToCloudinary(file: File) {
 
     stream.end(buffer);
   });
+}
+
+export async function uploadImageToCloudinary(file: File) {
+  try {
+    return await uploadImageWithSignedStream(file);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+
+    if (!message.toLowerCase().includes("invalid signature")) {
+      throw error;
+    }
+
+    console.warn("[cloudinary-upload] Signed upload failed, retrying with upload preset.");
+    return uploadImageWithPreset(file);
+  }
 }
