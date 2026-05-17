@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Camera } from "lucide-react";
+import { Camera, Check, ChevronDown } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -61,10 +61,13 @@ export function ProfileForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileNavRef = useRef<HTMLDivElement | null>(null);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
 
   const displayName = name.trim() || profile?.name || currentUser?.name || "User";
   const avatarLetter = displayName.charAt(0).toUpperCase();
   const avatarImage = avatarPreview || profile?.image || currentUser?.image || "";
+  const activeNavItem = profileNavItems.find((item) => item.value === activeTab) ?? profileNavItems[0];
 
   useEffect(() => {
     return () => {
@@ -110,6 +113,32 @@ export function ProfileForm() {
 
     return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    if (!isMobileNavOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!mobileNavRef.current?.contains(event.target as Node)) {
+        setIsMobileNavOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsMobileNavOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isMobileNavOpen]);
 
   async function handleUpdate(nextName?: string) {
     if (!currentUser) {
@@ -362,7 +391,64 @@ export function ProfileForm() {
                 ) : null}
               </section>
 
-              <section className="profile-dashboard-tabs rounded-xl p-2">
+              <section
+                ref={mobileNavRef}
+                className="profile-mobile-nav relative z-30 sm:hidden"
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsMobileNavOpen((current) => !current)}
+                  className="profile-mobile-nav-trigger flex min-h-14 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm font-semibold text-[var(--text)]"
+                  aria-expanded={isMobileNavOpen}
+                  aria-haspopup="menu"
+                >
+                  <span className="min-w-0 truncate">{activeNavItem.label}</span>
+                  <ChevronDown
+                    className={`h-5 w-5 shrink-0 transition-transform duration-200 ease-out ${
+                      isMobileNavOpen ? "rotate-180" : ""
+                    }`}
+                    strokeWidth={2.2}
+                    aria-hidden="true"
+                  />
+                </button>
+
+                <div
+                  className={`profile-mobile-nav-menu absolute left-0 right-0 top-[calc(100%+0.65rem)] overflow-hidden rounded-2xl p-2 ${
+                    isMobileNavOpen
+                      ? "profile-mobile-nav-menu-open pointer-events-auto"
+                      : "profile-mobile-nav-menu-closed pointer-events-none"
+                  }`}
+                  role="menu"
+                >
+                  {profileNavItems.map((item) => {
+                    const isActive = activeTab === item.value;
+
+                    return (
+                      <button
+                        key={item.value}
+                        type="button"
+                        onClick={() => {
+                          setActiveTab(item.value);
+                          setIsMobileNavOpen(false);
+                        }}
+                        className={`profile-mobile-nav-item flex min-h-12 w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold ${
+                          isActive
+                            ? "profile-mobile-nav-item-active text-[var(--text)]"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                        role="menuitem"
+                      >
+                        <span className="min-w-0 truncate">{item.label}</span>
+                        {isActive ? (
+                          <Check className="h-4 w-4 shrink-0" strokeWidth={2.4} aria-hidden="true" />
+                        ) : null}
+                      </button>
+                    );
+                  })}
+                </div>
+              </section>
+
+              <section className="profile-dashboard-tabs hidden rounded-xl p-2 sm:block">
                 <div className="flex flex-wrap gap-2">
                   {profileNavItems.map((item) => {
                     const isActive = activeTab === item.value;

@@ -1270,6 +1270,253 @@ html[data-theme="dark"] .success-confirmation-card {
   min-height: 2.75rem;
 }
 
+.profile-mobile-nav {
+  filter: none;
+}
+
+.profile-mobile-nav-trigger,
+.profile-mobile-nav-menu {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 24%, transparent), transparent 58%),
+    color-mix(in srgb, var(--surface-strong) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-strong) 72%, transparent);
+  box-shadow:
+    0 26px 72px -42px var(--shadow-elevated),
+    0 12px 32px -24px var(--shadow),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
+  backdrop-filter: blur(18px) saturate(138%);
+  -webkit-backdrop-filter: blur(18px) saturate(138%);
+}
+
+.profile-mobile-nav-trigger {
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color 180ms ease-out,
+    box-shadow 180ms ease-out,
+    background-color 180ms ease-out;
+}
+
+.profile-mobile-nav-trigger::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(circle at 14% 0%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 36%),
+    radial-gradient(circle at 92% 12%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 34%);
+  content: "";
+  pointer-events: none;
+}
+
+.profile-mobile-nav-trigger:hover,
+.profile-mobile-nav-trigger:focus-visible {
+  border-color: color-mix(in srgb, var(--primary) 44%, var(--border));
+  box-shadow:
+    0 30px 78px -42px color-mix(in srgb, var(--primary) 42%, var(--shadow-elevated)),
+    0 0 0 1px color-mix(in srgb, var(--primary) 16%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 80%, transparent);
+}
+
+.profile-mobile-nav-menu {
+  z-index: 80;
+  transform-origin: top center;
+  transition:
+    opacity 190ms ease-out,
+    transform 190ms ease-out,
+    visibility 190ms ease-out;
+  will-change: opacity, transform;
+}
+
+.profile-mobile-nav-menu-open {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
+.profile-mobile-nav-menu-closed {
+  opacity: 0;
+  transform: translateY(-0.45rem);
+  visibility: hidden;
+}
+
+.profile-mobile-nav-item {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  transition:
+    background-color 170ms ease-out,
+    border-color 170ms ease-out,
+    box-shadow 170ms ease-out,
+    color 170ms ease-out;
+}
+
+.profile-mobile-nav-item:hover,
+.profile-mobile-nav-item:focus-visible {
+  background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--primary) 22%, var(--border));
+  color: var(--text);
+}
+
+.profile-mobile-nav-item-active {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--primary) 18%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)),
+    color-mix(in srgb, var(--surface-strong) 82%, transparent);
+  border-color: color-mix(in srgb, var(--primary) 44%, var(--border));
+  box-shadow:
+    inset 3px 0 0 color-mix(in srgb, var(--primary) 88%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 70%, transparent);
+}
+
+.request-workflow-tab {
+  --request-tone: var(--primary);
+  --request-tone-soft: color-mix(in srgb, var(--request-tone) 12%, transparent);
+  --request-tone-mid: color-mix(in srgb, var(--request-tone) 28%, transparent);
+  min-width: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--request-tone) 24%, var(--border));
+  background:
+    linear-gradient(135deg, var(--request-tone-soft), transparent 52%),
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 16%, transparent), transparent 58%),
+    color-mix(in srgb, var(--surface-strong) 68%, transparent);
+  box-shadow:
+    0 14px 38px -30px color-mix(in srgb, var(--request-tone) 32%, var(--shadow)),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 54%, transparent);
+}
+
+.request-workflow-tab:nth-child(1) {
+  --request-tone: var(--primary);
+}
+
+.request-workflow-tab:nth-child(2) {
+  --request-tone: var(--success);
+}
+
+.request-workflow-tab:hover,
+.request-workflow-tab:focus-visible {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--request-tone) 17%, transparent), transparent 54%),
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 20%, transparent), transparent 58%),
+    color-mix(in srgb, var(--request-tone) 9%, var(--surface));
+  border-color: color-mix(in srgb, var(--request-tone) 42%, var(--border));
+  box-shadow:
+    0 18px 44px -30px color-mix(in srgb, var(--request-tone) 48%, var(--shadow-elevated)),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 66%, transparent);
+}
+
+.request-workflow-tab-active {
+  background:
+    radial-gradient(circle at 88% 16%, color-mix(in srgb, var(--request-tone) 22%, transparent), transparent 38%),
+    linear-gradient(135deg, color-mix(in srgb, var(--request-tone) 24%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)),
+    color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  border-color: color-mix(in srgb, var(--request-tone) 76%, var(--border));
+  color: var(--text);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--request-tone) 34%, transparent),
+    0 22px 54px -28px color-mix(in srgb, var(--request-tone) 68%, var(--shadow-elevated)),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 82%, transparent);
+}
+
+.request-workflow-tab-active:hover,
+.request-workflow-tab-active:focus-visible {
+  background:
+    radial-gradient(circle at 88% 16%, color-mix(in srgb, var(--request-tone) 22%, transparent), transparent 38%),
+    linear-gradient(135deg, color-mix(in srgb, var(--request-tone) 24%, transparent), color-mix(in srgb, var(--accent) 10%, transparent)),
+    color-mix(in srgb, var(--surface-strong) 92%, transparent);
+  border-color: color-mix(in srgb, var(--request-tone) 76%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--request-tone) 34%, transparent),
+    0 22px 54px -28px color-mix(in srgb, var(--request-tone) 68%, var(--shadow-elevated)),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 82%, transparent);
+  transform: none;
+}
+
+.request-workflow-tab-active::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0.28rem;
+  background: linear-gradient(180deg, var(--request-tone), var(--accent));
+  content: "";
+}
+
+.request-workflow-count {
+  background: color-mix(in srgb, var(--request-tone) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--request-tone) 26%, transparent);
+  color: var(--text);
+}
+
+.request-workflow-tab-active .request-workflow-count {
+  background: color-mix(in srgb, var(--request-tone) 22%, transparent);
+  border-color: color-mix(in srgb, var(--request-tone) 48%, transparent);
+  color: var(--text);
+}
+
+.request-tab-panel {
+  animation: request-tab-panel-in 220ms ease-out both;
+}
+
+.request-workflow-card {
+  --request-card-tone: var(--primary);
+  min-width: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 88% 12%, color-mix(in srgb, var(--request-card-tone) 18%, transparent), transparent 38%),
+    linear-gradient(135deg, color-mix(in srgb, var(--request-card-tone) 20%, transparent), transparent 54%),
+    var(--glass);
+  border-color: color-mix(in srgb, var(--request-card-tone) 62%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--request-card-tone) 20%, transparent),
+    0 20px 52px -28px color-mix(in srgb, var(--request-card-tone) 56%, var(--shadow-elevated)),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 76%, transparent);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.request-workflow-card::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0.24rem;
+  background: linear-gradient(180deg, var(--request-card-tone), var(--accent));
+  content: "";
+}
+
+.request-workflow-card-sent {
+  --request-card-tone: var(--primary);
+}
+
+.request-workflow-card-received {
+  --request-card-tone: var(--success);
+}
+
+.request-workflow-card:hover {
+  border-color: color-mix(in srgb, var(--request-card-tone) 78%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--request-card-tone) 34%, transparent),
+    0 24px 60px -26px color-mix(in srgb, var(--request-card-tone) 68%, var(--shadow-elevated)),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 84%, transparent);
+  transform: translateY(-1px);
+}
+
+@keyframes request-tab-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .profile-content-heading {
   padding-inline: 0.25rem;
 }
@@ -1878,6 +2125,8 @@ body::after {
   .profile-home-btn,
   .profile-dashboard-header,
   .profile-dashboard-tabs,
+  .profile-mobile-nav-trigger,
+  .profile-mobile-nav-menu,
   .profile-dashboard-content {
     backdrop-filter: blur(8px) saturate(118%);
     -webkit-backdrop-filter: blur(8px) saturate(118%);
