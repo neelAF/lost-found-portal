@@ -579,8 +579,12 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
         </header>
 
         <main className="flex flex-1 flex-col gap-10 pt-10">
-          <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <div className="glass-card rounded-[2rem] p-8 shadow-sm transition-all duration-300 hover:shadow-md sm:p-10">
+          <section className="relative isolate grid gap-8 overflow-visible lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div
+              className={`glass-card relative overflow-visible rounded-[2rem] p-8 shadow-sm transition-all duration-300 hover:shadow-md sm:p-10 ${
+                isFilterDropdownOpen ? "z-[90]" : "z-10"
+              }`}
+            >
               <p className="mb-4 inline-flex glass rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.32em] eyebrow">
                 Trusted across campus
               </p>
@@ -592,11 +596,7 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                 activity, and help lost items find their way home.
               </p>
 
-              <div
-                className={`glass-card relative mx-auto mt-8 max-w-3xl overflow-visible rounded-2xl p-6 text-[var(--text)] shadow-sm transition-all duration-300 hover:shadow-md ${
-                  isFilterDropdownOpen ? "z-50" : "z-10"
-                }`}
-              >
+              <div className="glass-card relative z-10 mx-auto mt-8 max-w-3xl overflow-visible rounded-2xl p-6 text-[var(--text)] shadow-sm transition-all duration-300 hover:shadow-md">
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-semibold text-[var(--text)]">
@@ -647,7 +647,7 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                     </button>
 
                     <div
-                      className={`filter-mobile-menu absolute left-0 right-0 top-[calc(100%+0.6rem)] z-30 overflow-hidden rounded-2xl border border-[var(--border)] p-2 shadow-[0_24px_70px_-34px_var(--shadow-elevated)] transition-opacity duration-150 ease-out ${
+                      className={`filter-mobile-menu absolute left-0 right-0 top-[calc(100%+0.6rem)] z-[100] overflow-hidden rounded-2xl border border-[var(--border)] p-2 shadow-[0_24px_70px_-34px_var(--shadow-elevated)] transition-opacity duration-150 ease-out ${
                         isFilterDropdownOpen
                           ? "pointer-events-auto opacity-100"
                           : "pointer-events-none opacity-0"
@@ -728,7 +728,7 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="relative z-0 grid gap-4 sm:grid-cols-3 lg:grid-cols-1">
               {stats.map((stat) => (
                 <div
                   key={stat.label}
