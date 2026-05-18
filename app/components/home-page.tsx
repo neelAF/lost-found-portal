@@ -672,9 +672,9 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                             role="option"
                             aria-selected={isActive}
                           >
-                            <span>{filter.label}</span>
+                            <span className="relative z-10">{filter.label}</span>
                             {isActive ? (
-                              <span className="filter-mobile-selected-dot h-2 w-2 rounded-full" aria-hidden="true" />
+                              <span className="filter-mobile-selected-dot relative z-10 h-2 w-2 rounded-full" aria-hidden="true" />
                             ) : null}
                           </button>
                         );
