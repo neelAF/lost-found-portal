@@ -15,6 +15,23 @@ type ClaimRequestsSectionProps = {
 type RequestView = "sent" | "received";
 
 const requestViews: RequestView[] = ["sent", "received"];
+const requestViewStorageKeyByVariant: Record<
+  NonNullable<ClaimRequestsSectionProps["variant"]>,
+  string
+> = {
+  ownership: "lost-found-profile-ownership-request-view",
+  "finder-response": "lost-found-profile-finder-response-request-view",
+};
+
+function getInitialRequestView(variant: NonNullable<ClaimRequestsSectionProps["variant"]>) {
+  if (typeof window === "undefined") {
+    return "sent";
+  }
+
+  const storedView = window.sessionStorage.getItem(requestViewStorageKeyByVariant[variant]);
+
+  return storedView === "received" ? "received" : "sent";
+}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-US", {
@@ -57,7 +74,9 @@ export function ClaimRequestsSection({
   const { data: session } = useSession();
   const currentUserEmail = session?.user?.email?.trim().toLowerCase() ?? "";
   const isFinderResponse = variant === "finder-response";
-  const [activeRequestView, setActiveRequestView] = useState<RequestView>("sent");
+  const [activeRequestView, setActiveRequestView] = useState<RequestView>(() =>
+    getInitialRequestView(variant),
+  );
   const [claimsByView, setClaimsByView] = useState<Record<RequestView, Claim[]>>({
     sent: [],
     received: [],
@@ -109,6 +128,14 @@ export function ClaimRequestsSection({
     },
     [isFinderResponse],
   );
+
+  useEffect(() => {
+    setActiveRequestView(getInitialRequestView(variant));
+  }, [variant]);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(requestViewStorageKeyByVariant[variant], activeRequestView);
+  }, [activeRequestView, variant]);
 
   useEffect(() => {
     const controller = new AbortController();
