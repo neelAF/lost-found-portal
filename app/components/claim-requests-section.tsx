@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 
 import type { Claim } from "@/lib/claim-shared";
 
@@ -33,6 +34,10 @@ function getEmailInitial(email: string) {
   return email.trim().charAt(0).toUpperCase() || "U";
 }
 
+function getDisplayName(name: string, email: string, currentUserEmail: string) {
+  return email.trim().toLowerCase() === currentUserEmail ? "You" : name;
+}
+
 function getStatusClass(status: Claim["status"]) {
   if (status === "rejected") {
     return "badge-danger";
@@ -49,6 +54,8 @@ export function ClaimRequestsSection({
   showHeader = true,
   variant = "ownership",
 }: ClaimRequestsSectionProps) {
+  const { data: session } = useSession();
+  const currentUserEmail = session?.user?.email?.trim().toLowerCase() ?? "";
   const isFinderResponse = variant === "finder-response";
   const [activeRequestView, setActiveRequestView] = useState<RequestView>("sent");
   const [claimsByView, setClaimsByView] = useState<Record<RequestView, Claim[]>>({
@@ -165,23 +172,32 @@ export function ClaimRequestsSection({
 
     return view === "sent"
       ? "Claim requests you sent on FOUND item posts."
-      : "Claim requests received on your FOUND item posts.";
+      : "Claim on your FOUND item posts.";
   }
 
   function renderParticipant(claim: Claim, view: RequestView) {
     const isSent = view === "sent";
     const participantLabel = isSent
       ? isFinderResponse
-        ? "Item owner"
-        : "Finder"
+        ? "Owner"
+        : "Owner"
       : isFinderResponse
         ? "Finder"
-        : "Claimant";
+        : "Owner";
     const participantName = isSent
-      ? claim.finderEmail
-      : claim.requesterName || claim.ownerEmail;
-    const participantEmail = isSent ? claim.finderEmail : claim.ownerEmail;
+      ? isFinderResponse
+        ? claim.finderName || claim.finderEmail
+        : claim.requesterName || claim.ownerEmail
+      : isFinderResponse
+        ? claim.requesterName || "Finder"
+        : claim.requesterName || claim.ownerEmail;
+    const participantEmail = isSent
+      ? isFinderResponse
+        ? claim.finderEmail
+        : claim.ownerEmail
+      : claim.ownerEmail;
     const showRequesterImage = !isSent && claim.requesterImage;
+    const displayName = getDisplayName(participantName, participantEmail, currentUserEmail);
 
     return (
       <div className="mt-3 flex min-w-0 items-center gap-3">
@@ -202,13 +218,8 @@ export function ClaimRequestsSection({
         </div>
         <div className="min-w-0">
           <h3 className="truncate text-lg font-semibold text-[var(--text)]">
-            {participantLabel}: {participantName}
+            {participantLabel}: {displayName}
           </h3>
-          {!isSent && claim.requesterName ? (
-            <p className="mt-1 truncate text-xs font-medium text-[var(--text-secondary)]">
-              {participantEmail}
-            </p>
-          ) : null}
         </div>
       </div>
     );
@@ -216,6 +227,7 @@ export function ClaimRequestsSection({
 
   function renderClaimCard(claim: Claim, view: RequestView) {
     const canOpenChat = claim.status === "approved" || claim.status === "completed";
+    const shouldShowParticipant = isFinderResponse || view !== "sent";
 
     return (
       <article
@@ -249,7 +261,7 @@ export function ClaimRequestsSection({
           </span>
         </div>
 
-        {renderParticipant(claim, view)}
+        {shouldShowParticipant ? renderParticipant(claim, view) : null}
 
         <p className="mt-4 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-4 py-3 text-sm leading-7 text-[var(--text-secondary)]">
           {claim.message ||
@@ -258,7 +270,6 @@ export function ClaimRequestsSection({
 
         <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-medium text-[var(--text-secondary)]">
           <span>Submitted {formatDate(claim.createdAt)}</span>
-          {claim.itemLocation ? <span className="break-words">Location: {claim.itemLocation}</span> : null}
         </div>
 
         <div className="mt-5 flex flex-wrap gap-3">

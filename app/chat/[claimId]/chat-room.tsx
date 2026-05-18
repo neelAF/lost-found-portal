@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
@@ -29,7 +30,47 @@ function getParticipantLabel(claim: Claim | null, email: string) {
     return email === claim.ownerEmail ? "Finder" : "Owner";
   }
 
-  return email === claim.ownerEmail ? "Claimant" : "Finder";
+  return email === claim.ownerEmail ? "Owner" : "Finder";
+}
+
+function getParticipantName(claim: Claim | null, email: string) {
+  if (!claim) {
+    return email;
+  }
+
+  if (email === claim.ownerEmail) {
+    return claim.ownerName || claim.requesterName || claim.ownerEmail;
+  }
+
+  if (email === claim.finderEmail) {
+    return claim.finderName || claim.finderEmail;
+  }
+
+  return email;
+}
+
+function getParticipantImage(claim: Claim | null, email: string, currentUserEmail: string, currentUserImage: string) {
+  if (email === currentUserEmail && currentUserImage) {
+    return currentUserImage;
+  }
+
+  if (!claim) {
+    return "";
+  }
+
+  if (email === claim.ownerEmail) {
+    return claim.ownerImage || claim.requesterImage || "";
+  }
+
+  if (email === claim.finderEmail) {
+    return claim.finderImage || "";
+  }
+
+  return "";
+}
+
+function getInitial(value: string) {
+  return value.trim().charAt(0).toUpperCase() || "U";
 }
 
 export function ChatRoom() {
@@ -38,6 +79,7 @@ export function ChatRoom() {
   const { data: session } = useSession();
   const claimId = typeof params.claimId === "string" ? params.claimId : "";
   const currentUserEmail = session?.user?.email?.toLowerCase() ?? "";
+  const currentUserImage = session?.user?.image ?? "";
 
   const [claim, setClaim] = useState<Claim | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -244,18 +286,47 @@ export function ChatRoom() {
                   {messages.length ? (
                     messages.map((entry) => {
                       const isOwnMessage = entry.senderEmail === currentUserEmail;
+                      const senderName = getParticipantName(claim, entry.senderEmail);
+                      const senderLabel = isOwnMessage
+                        ? "You"
+                        : getParticipantLabel(claim, entry.senderEmail);
+                      const senderImage = getParticipantImage(
+                        claim,
+                        entry.senderEmail,
+                        currentUserEmail,
+                        currentUserImage,
+                      );
 
                       return (
                         <div
                           key={entry.id}
-                          className={`flex ${isOwnMessage ? "justify-end" : "justify-start"}`}
+                          className={`flex items-end gap-3 ${isOwnMessage ? "flex-row-reverse" : ""}`}
                         >
+                          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--accent)] text-xs font-bold text-[var(--on-accent)] shadow-lg shadow-[var(--shadow)] ring-1 ring-white/20">
+                            {senderImage ? (
+                              <Image
+                                src={senderImage}
+                                alt=""
+                                fill
+                                sizes="40px"
+                                className="object-cover"
+                              />
+                            ) : (
+                              getInitial(senderName)
+                            )}
+                          </div>
                           <div
-                            className={`max-w-full break-words rounded-[1.5rem] px-4 py-3 text-sm shadow-sm sm:max-w-xl ${isOwnMessage
+                            className={`max-w-[min(100%,42rem)] break-words rounded-[1.5rem] px-4 py-3 text-sm shadow-sm ${isOwnMessage
                                 ? "bg-[var(--primary)] text-[var(--on-accent)]"
                                 : "border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
                               }`}
                           >
+                            <p
+                              className={`mb-1 text-xs font-semibold ${isOwnMessage ? "text-[var(--on-accent)]/85" : "text-[var(--text-secondary)]"
+                                }`}
+                            >
+                              {senderLabel}
+                            </p>
                             <p>{entry.message}</p>
                             <p
                               className={`mt-2 text-xs ${isOwnMessage ? "text-[var(--on-accent)]/80" : "text-[var(--text-secondary)]"

@@ -1505,6 +1505,84 @@ html[data-theme="dark"] .success-confirmation-card {
   transform: translateY(-1px);
 }
 
+.chat-dashboard-tab {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.chat-dashboard-card {
+  --chat-card-tone: var(--primary);
+  min-width: 0;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 86% 10%, color-mix(in srgb, var(--chat-card-tone) 28%, transparent), transparent 40%),
+    linear-gradient(135deg, color-mix(in srgb, var(--chat-card-tone) 24%, transparent), transparent 56%),
+    var(--glass);
+  border-color: color-mix(in srgb, var(--chat-card-tone) 72%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--chat-card-tone) 30%, transparent),
+    0 20px 52px -26px color-mix(in srgb, var(--chat-card-tone) 66%, var(--shadow-elevated)),
+    0 0 32px -20px color-mix(in srgb, var(--chat-card-tone) 84%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.chat-dashboard-card::before {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 0.28rem;
+  background: linear-gradient(180deg, var(--chat-card-tone), var(--accent));
+  box-shadow: 0 0 28px color-mix(in srgb, var(--chat-card-tone) 76%, transparent);
+  content: "";
+}
+
+.chat-dashboard-card-ownership {
+  --chat-card-tone: var(--primary);
+}
+
+.chat-dashboard-card-finder-response {
+  --chat-card-tone: var(--success);
+}
+
+.chat-dashboard-card:hover,
+.chat-dashboard-card:focus-visible {
+  border-color: color-mix(in srgb, var(--chat-card-tone) 88%, var(--border));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--chat-card-tone) 46%, transparent),
+    0 24px 60px -24px color-mix(in srgb, var(--chat-card-tone) 78%, var(--shadow-elevated)),
+    0 0 40px -18px color-mix(in srgb, var(--chat-card-tone) 88%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 82%, transparent);
+  transform: translateY(-1px);
+}
+
+.chat-dashboard-avatar {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--chat-card-tone) 78%, var(--accent)), var(--accent));
+  box-shadow:
+    0 12px 28px -16px color-mix(in srgb, var(--chat-card-tone) 90%, var(--shadow-elevated)),
+    0 0 0 1px color-mix(in srgb, var(--chat-card-tone) 44%, transparent),
+    0 0 22px -12px color-mix(in srgb, var(--chat-card-tone) 86%, transparent);
+}
+
+.chat-dashboard-item-preview {
+  border-color: color-mix(in srgb, var(--chat-card-tone) 52%, var(--border));
+  box-shadow:
+    0 12px 26px -18px color-mix(in srgb, var(--chat-card-tone) 82%, var(--shadow-elevated)),
+    0 0 0 1px color-mix(in srgb, var(--chat-card-tone) 24%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 62%, transparent);
+}
+
+.chat-dashboard-participant {
+  text-shadow: 0 0 18px color-mix(in srgb, var(--chat-card-tone) 28%, transparent);
+}
+
 @keyframes request-tab-panel-in {
   from {
     opacity: 0;
