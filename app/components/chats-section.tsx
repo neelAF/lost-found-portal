@@ -21,6 +21,7 @@ type ChatWorkflowConfig = {
 };
 
 const chatWorkflows: ChatWorkflow[] = ["ownership", "finder-response"];
+const chatActiveWorkflowStorageKey = "lost-found-profile-chat-workflow";
 
 const chatWorkflowConfig: Record<ChatWorkflow, ChatWorkflowConfig> = {
   ownership: {
@@ -36,6 +37,16 @@ const chatWorkflowConfig: Record<ChatWorkflow, ChatWorkflowConfig> = {
     emptyMessage: "No finder response chats yet.",
   },
 };
+
+function getInitialChatWorkflow(): ChatWorkflow {
+  if (typeof window === "undefined") {
+    return "ownership";
+  }
+
+  const storedWorkflow = window.sessionStorage.getItem(chatActiveWorkflowStorageKey);
+
+  return storedWorkflow === "finder-response" ? "finder-response" : "ownership";
+}
 
 function getClaimWorkflow(claim: Claim): ChatWorkflow {
   if (claim.requestType === "finder-response" || claim.itemType === "lost") {
@@ -92,7 +103,7 @@ function getLatestPreview(claim: Claim, workflow: ChatWorkflow) {
 export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
   const { data: session } = useSession();
   const currentUserEmail = session?.user?.email?.trim().toLowerCase() ?? "";
-  const [activeWorkflow, setActiveWorkflow] = useState<ChatWorkflow>("ownership");
+  const [activeWorkflow, setActiveWorkflow] = useState<ChatWorkflow>(getInitialChatWorkflow);
   const [claimsByWorkflow, setClaimsByWorkflow] = useState<Record<ChatWorkflow, Claim[]>>({
     ownership: [],
     "finder-response": [],
@@ -137,6 +148,10 @@ export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
       }
     }
   }, []);
+
+  useEffect(() => {
+    window.sessionStorage.setItem(chatActiveWorkflowStorageKey, activeWorkflow);
+  }, [activeWorkflow]);
 
   useEffect(() => {
     const controller = new AbortController();

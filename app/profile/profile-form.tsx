@@ -35,6 +35,19 @@ const profileNavItems: Array<{ label: string; value: ProfileTab }> = [
   { label: "Change Password", value: "password" },
 ];
 
+const profileActiveTabStorageKey = "lost-found-profile-active-tab";
+
+function getInitialProfileTab(): ProfileTab {
+  if (typeof window === "undefined") {
+    return "items";
+  }
+
+  const storedTab = window.sessionStorage.getItem(profileActiveTabStorageKey);
+  const matchedTab = profileNavItems.find((item) => item.value === storedTab);
+
+  return matchedTab?.value ?? "items";
+}
+
 const avatarMimeTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 const avatarFileNamePattern = /\.(jpe?g|png|webp)$/i;
 const avatarUploadFolder = "lost-found-portal/avatars";
@@ -53,7 +66,7 @@ export function ProfileForm() {
   const currentUser = session?.user ?? null;
   const [profile, setProfile] = useState<ProfileResponse | null>(null);
   const [name, setName] = useState("");
-  const [activeTab, setActiveTab] = useState<ProfileTab>("items");
+  const [activeTab, setActiveTab] = useState<ProfileTab>(getInitialProfileTab);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isAvatarUploading, setIsAvatarUploading] = useState(false);
@@ -68,6 +81,10 @@ export function ProfileForm() {
   const avatarLetter = displayName.charAt(0).toUpperCase();
   const avatarImage = avatarPreview || profile?.image || currentUser?.image || "";
   const activeNavItem = profileNavItems.find((item) => item.value === activeTab) ?? profileNavItems[0];
+
+  useEffect(() => {
+    window.sessionStorage.setItem(profileActiveTabStorageKey, activeTab);
+  }, [activeTab]);
 
   useEffect(() => {
     return () => {

@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -252,12 +251,13 @@ export function ChatRoom() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <Link
-                href="/profile"
+              <button
+                type="button"
+                onClick={() => router.back()}
                 className="btn-ghost min-h-11 rounded-full px-5 py-2.5 text-sm font-medium"
               >
-                Back to Profile
-              </Link>
+                Back
+              </button>
               <button
                 type="button"
                 onClick={() => void handleComplete()}
