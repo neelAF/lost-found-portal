@@ -1599,6 +1599,92 @@ html[data-theme="dark"] .success-confirmation-card {
   padding-inline: 0.25rem;
 }
 
+.filter-mobile-tone-all {
+  --filter-mobile-tone: #818cf8;
+}
+
+.filter-mobile-tone-lost {
+  --filter-mobile-tone: var(--warning);
+}
+
+.filter-mobile-tone-found {
+  --filter-mobile-tone: var(--success);
+}
+
+.filter-mobile-tone-resolved {
+  --filter-mobile-tone: var(--text-secondary);
+}
+
+.filter-mobile-trigger {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--filter-mobile-tone) 13%, transparent), transparent 56%),
+    color-mix(in srgb, var(--surface-strong) 82%, transparent);
+  border-color: color-mix(in srgb, var(--filter-mobile-tone) 36%, var(--border));
+  box-shadow:
+    0 16px 42px -30px color-mix(in srgb, var(--filter-mobile-tone) 58%, var(--shadow-elevated)),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 62%, transparent);
+}
+
+.filter-mobile-dot,
+.filter-mobile-selected-dot {
+  background: var(--filter-mobile-tone);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--filter-mobile-tone) 82%, transparent);
+}
+
+.filter-mobile-option-active {
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--filter-mobile-tone) 78%, var(--glass-highlight)), var(--filter-mobile-tone));
+  border: 1px solid color-mix(in srgb, var(--glass-highlight) 44%, var(--filter-mobile-tone));
+  color: #ffffff;
+  box-shadow:
+    0 14px 34px -24px color-mix(in srgb, var(--filter-mobile-tone) 86%, var(--shadow-elevated)),
+    0 0 24px -16px color-mix(in srgb, var(--filter-mobile-tone) 86%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
+}
+
+.filter-mobile-menu {
+  position: absolute;
+  isolation: isolate;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 16%, transparent), transparent 46%),
+    color-mix(in srgb, var(--surface-strong) 88%, transparent);
+  border-color: color-mix(in srgb, var(--glass-highlight) 42%, var(--border));
+  box-shadow:
+    0 24px 70px -38px var(--shadow-elevated),
+    0 8px 24px -20px var(--shadow),
+    0 0 0 1px color-mix(in srgb, var(--glass-highlight) 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 58%, transparent),
+    inset 0 -1px 0 color-mix(in srgb, var(--border) 52%, transparent);
+  backdrop-filter: blur(18px) saturate(1.35);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+}
+
+.filter-mobile-menu::before {
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--glass-highlight) 10%, transparent), transparent 52%),
+    color-mix(in srgb, var(--surface) 54%, transparent);
+  content: "";
+}
+
+.filter-mobile-menu > button {
+  position: relative;
+  z-index: 1;
+  text-shadow: none;
+}
+
+.filter-mobile-menu > button:not(.filter-mobile-option-active) {
+  color: color-mix(in srgb, var(--text) 88%, var(--glass-highlight));
+}
+
+.filter-mobile-option-active .filter-mobile-selected-dot {
+  background: #ffffff;
+  box-shadow: 0 0 14px color-mix(in srgb, #ffffff 78%, transparent);
+}
+
 .eyebrow {
   color: var(--accent);
 }

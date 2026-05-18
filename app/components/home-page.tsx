@@ -33,6 +33,22 @@ const typeFilters: Array<{ label: string; value: LostItemFilter }> = [
   { label: "Resolved", value: "resolved" },
 ];
 
+function getMobileFilterToneClass(type: LostItemFilter) {
+  if (type === "lost") {
+    return "filter-mobile-tone-lost";
+  }
+
+  if (type === "found") {
+    return "filter-mobile-tone-found";
+  }
+
+  if (type === "resolved") {
+    return "filter-mobile-tone-resolved";
+  }
+
+  return "filter-mobile-tone-all";
+}
+
 function buildItemsUrl(type: LostItemFilter, search?: string) {
   const normalizedSearch = search?.trim() ?? "";
   const params = new URLSearchParams();
@@ -576,7 +592,11 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                 activity, and help lost items find their way home.
               </p>
 
-              <div className="glass-card mx-auto mt-8 max-w-3xl rounded-2xl p-6 text-[var(--text)] shadow-sm transition-all duration-300 hover:shadow-md">
+              <div
+                className={`glass-card relative mx-auto mt-8 max-w-3xl overflow-visible rounded-2xl p-6 text-[var(--text)] shadow-sm transition-all duration-300 hover:shadow-md ${
+                  isFilterDropdownOpen ? "z-50" : "z-10"
+                }`}
+              >
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-xl font-semibold text-[var(--text)]">
@@ -608,12 +628,14 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                     <button
                       type="button"
                       onClick={() => setIsFilterDropdownOpen((current) => !current)}
-                      className="filter-mobile-trigger glass flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-[var(--border)] px-4 py-3 text-left text-sm font-semibold text-[var(--text)] shadow-[0_16px_42px_-30px_var(--shadow-elevated)] transition-all duration-200 ease-out"
+                      className={`filter-mobile-trigger ${getMobileFilterToneClass(
+                        activeType,
+                      )} glass flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border border-[var(--border)] px-4 py-3 text-left text-sm font-semibold text-[var(--text)] shadow-[0_16px_42px_-30px_var(--shadow-elevated)] transition-all duration-200 ease-out`}
                       aria-expanded={isFilterDropdownOpen}
                       aria-haspopup="listbox"
                     >
                       <span className="flex min-w-0 items-center gap-3">
-                        <span className="h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--accent)] shadow-[0_0_18px_var(--accent)]" />
+                        <span className="filter-mobile-dot h-2.5 w-2.5 shrink-0 rounded-full" />
                         <span className="min-w-0 truncate">{activeTypeLabel}</span>
                       </span>
                       <span
@@ -625,7 +647,7 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                     </button>
 
                     <div
-                      className={`filter-mobile-menu absolute left-0 right-0 top-[calc(100%+0.6rem)] z-30 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--surface-strong)] p-2 shadow-[0_24px_70px_-34px_var(--shadow-elevated)] transition-opacity duration-150 ease-out ${
+                      className={`filter-mobile-menu absolute left-0 right-0 top-[calc(100%+0.6rem)] z-30 overflow-hidden rounded-2xl border border-[var(--border)] p-2 shadow-[0_24px_70px_-34px_var(--shadow-elevated)] transition-opacity duration-150 ease-out ${
                         isFilterDropdownOpen
                           ? "pointer-events-auto opacity-100"
                           : "pointer-events-none opacity-0"
@@ -640,9 +662,11 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                             key={filter.value}
                             type="button"
                             onClick={() => void handleTypeFilterChange(filter.value)}
-                            className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-all duration-150 ease-out ${
+                            className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-left text-sm font-semibold transition-all duration-150 ease-out ${getMobileFilterToneClass(
+                              filter.value,
+                            )} ${
                               isActive
-                                ? "bg-[var(--accent)] text-[var(--on-accent)] shadow-md"
+                                ? "filter-mobile-option-active"
                                 : "text-[var(--text)] hover:bg-[var(--surface)]"
                             }`}
                             role="option"
@@ -650,7 +674,7 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
                           >
                             <span>{filter.label}</span>
                             {isActive ? (
-                              <span className="h-2 w-2 rounded-full bg-current" aria-hidden="true" />
+                              <span className="filter-mobile-selected-dot h-2 w-2 rounded-full" aria-hidden="true" />
                             ) : null}
                           </button>
                         );
