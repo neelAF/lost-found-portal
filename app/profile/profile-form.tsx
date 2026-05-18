@@ -430,7 +430,7 @@ export function ProfileForm() {
                 </button>
 
                 <div
-                  className={`profile-mobile-nav-menu absolute left-0 right-0 top-[calc(100%+0.65rem)] overflow-hidden rounded-2xl p-2 ${
+                  className={`profile-mobile-nav-menu absolute left-0 right-0 top-[calc(100%+0.75rem)] rounded-[1.75rem] border border-[var(--navbar-border)] p-3 shadow-[0_34px_90px_-42px_var(--navbar-shadow),0_22px_52px_-34px_var(--shadow),inset_0_1px_0_rgba(255,255,255,0.36)] min-[360px]:p-3.5 ${
                     isMobileNavOpen
                       ? "profile-mobile-nav-menu-open pointer-events-auto"
                       : "profile-mobile-nav-menu-closed pointer-events-none"
@@ -448,7 +448,7 @@ export function ProfileForm() {
                           setActiveTab(item.value);
                           setIsMobileNavOpen(false);
                         }}
-                        className={`profile-mobile-nav-item flex min-h-12 w-full items-center justify-between gap-3 rounded-xl px-3.5 py-3 text-left text-sm font-semibold ${
+                        className={`profile-mobile-nav-item flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium ${
                           isActive
                             ? "profile-mobile-nav-item-active text-[var(--text)]"
                             : "text-[var(--text-secondary)]"
