@@ -123,8 +123,8 @@ html[data-theme="dark"] {
 
 .glass {
   background: var(--glass);
-  backdrop-filter: blur(18px) saturate(142%);
-  -webkit-backdrop-filter: blur(18px) saturate(142%);
+  backdrop-filter: blur(12px) saturate(132%);
+  -webkit-backdrop-filter: blur(12px) saturate(132%);
   border: 1px solid var(--border);
   box-shadow:
     0 18px 48px -30px var(--shadow-elevated),
@@ -163,8 +163,8 @@ html[data-theme="dark"] {
     0 16px 42px -28px var(--shadow),
     inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 78%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--border) 46%, transparent);
-  backdrop-filter: blur(22px) saturate(142%) brightness(106%);
-  -webkit-backdrop-filter: blur(22px) saturate(142%) brightness(106%);
+  backdrop-filter: blur(14px) saturate(132%) brightness(104%);
+  -webkit-backdrop-filter: blur(14px) saturate(132%) brightness(104%);
   transition: none;
 }
 
@@ -188,8 +188,8 @@ html[data-theme="dark"] {
     0 16px 42px -28px var(--shadow),
     inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 78%, transparent),
     inset 0 -1px 0 color-mix(in srgb, var(--border) 46%, transparent);
-  backdrop-filter: blur(22px) saturate(142%) brightness(106%);
-  -webkit-backdrop-filter: blur(22px) saturate(142%) brightness(106%);
+  backdrop-filter: blur(14px) saturate(132%) brightness(104%);
+  -webkit-backdrop-filter: blur(14px) saturate(132%) brightness(104%);
 }
 
 .navbar-glass> :not(.navbar-glass-backdrop) {
@@ -603,8 +603,8 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary {
   background: var(--card);
   isolation: isolate;
   transform: none;
-  backdrop-filter: blur(18px) saturate(138%);
-  -webkit-backdrop-filter: blur(18px) saturate(138%);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
   border: 1px solid var(--border);
   box-shadow:
     0 28px 86px -48px var(--shadow-elevated),
@@ -627,6 +627,31 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary {
   backface-visibility: visible;
   transform-style: flat;
   will-change: auto;
+}
+
+.recent-activity-card,
+.stats-glow-card,
+.quick-action-btn,
+.recent-action-btn,
+.filter-tab {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+.recent-activity-card:hover,
+.stats-glow-card:hover,
+.quick-action-btn:hover,
+.quick-action-btn:focus-visible,
+.recent-action-btn:hover,
+.recent-action-btn:focus-visible,
+.filter-tab:hover,
+.filter-tab:focus-visible {
+  will-change: transform;
+}
+
+#recent-items {
+  content-visibility: auto;
+  contain-intrinsic-size: 900px;
 }
 
 .resolved-stamp-overlay {
@@ -800,8 +825,8 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary {
   background:
     radial-gradient(circle at 50% 35%, rgba(56, 189, 248, 0.10), transparent 34%),
     rgba(2, 6, 23, 0.50);
-  backdrop-filter: blur(18px) saturate(132%);
-  -webkit-backdrop-filter: blur(18px) saturate(132%);
+  backdrop-filter: blur(10px) saturate(124%);
+  -webkit-backdrop-filter: blur(10px) saturate(124%);
 }
 
 .claim-modal-panel {
@@ -817,8 +842,8 @@ html:not(.dark) .navbar-glass .mobile-menu-item-accent.btn-primary {
     0 20px 54px -28px rgba(30, 41, 59, 0.34),
     inset 0 1px 0 rgba(255, 255, 255, 0.94),
     inset 0 -1px 0 rgba(100, 116, 139, 0.18);
-  backdrop-filter: blur(24px) saturate(142%);
-  -webkit-backdrop-filter: blur(24px) saturate(142%);
+  backdrop-filter: blur(14px) saturate(132%);
+  -webkit-backdrop-filter: blur(14px) saturate(132%);
   color: var(--text);
 }
 
@@ -884,8 +909,8 @@ html[data-theme="dark"] .claim-modal-panel::before {
     0 48px 120px -44px color-mix(in srgb, var(--success) 44%, rgba(15, 23, 42, 0.42)),
     0 22px 58px -30px rgba(15, 23, 42, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(24px) saturate(142%);
-  -webkit-backdrop-filter: blur(24px) saturate(142%);
+  backdrop-filter: blur(14px) saturate(132%);
+  -webkit-backdrop-filter: blur(14px) saturate(132%);
   animation: success-card-in 620ms cubic-bezier(0.16, 1.2, 0.28, 1) both;
 }
 
@@ -1189,8 +1214,8 @@ html[data-theme="dark"] .success-confirmation-card {
     0 34px 92px -50px var(--shadow-elevated),
     0 14px 38px -28px var(--shadow),
     inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 70%, transparent);
-  backdrop-filter: blur(18px) saturate(138%);
-  -webkit-backdrop-filter: blur(18px) saturate(138%);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
 }
 
 .profile-sidebar::before,
@@ -1283,8 +1308,8 @@ html[data-theme="dark"] .success-confirmation-card {
     0 26px 72px -42px var(--shadow-elevated),
     0 12px 32px -24px var(--shadow),
     inset 0 1px 0 color-mix(in srgb, var(--glass-highlight) 72%, transparent);
-  backdrop-filter: blur(18px) saturate(138%);
-  -webkit-backdrop-filter: blur(18px) saturate(138%);
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
 }
 
 .profile-mobile-nav-trigger {
@@ -2082,8 +2107,8 @@ html[data-theme="dark"] .navbar-glass .mobile-menu-item:not(.mobile-menu-item-ac
   background: var(--glass);
   border: 1px solid var(--border);
   color: var(--text);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .btn-primary:not(:disabled):hover,
@@ -2320,12 +2345,6 @@ html[data-theme="dark"] .navbar-glass .mobile-menu-item:not(.mobile-menu-item-ac
 
 * {
   box-sizing: border-box;
-  transition:
-    background-color 0.3s ease-in-out,
-    color 0.3s ease-in-out,
-    border-color 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out,
-    transform 0.3s ease-in-out;
 }
 
 :where(button, [role="button"], a[href], summary, label[for], select, input[type="button"], input[type="submit"], input[type="reset"], input[type="checkbox"], input[type="radio"], input[type="file"]) {
@@ -2443,9 +2462,10 @@ body::before {
     var(--floating-glow),
     var(--ambient-glow);
   background-size: 130% 130%, 118% 118%;
-  filter: blur(24px);
+  filter: blur(14px);
   opacity: 0.86;
-  animation: ambient-drift 36s ease-in-out infinite alternate;
+  transform: translateZ(0);
+  animation: none;
 }
 
 body::after {
@@ -2469,10 +2489,11 @@ body::after {
     var(--ambient-glow),
     var(--vignette);
   background-size: 135% 135%, 126% 126%, 100% 100%;
-  filter: blur(18px);
+  filter: blur(12px);
   opacity: 0.76;
   pointer-events: none;
-  animation: ambient-drift 38s ease-in-out infinite alternate;
+  transform: translateZ(0);
+  animation: none;
 }
 
 @media (max-width: 640px) {
@@ -2570,17 +2591,7 @@ body::after {
     var(--ambient-glow),
     var(--background-gradient);
   background-size: 100% 100%, 135% 135%, 126% 126%, 145% 145%;
-  animation: ambient-drift 38s ease-in-out infinite alternate;
-}
-
-@keyframes ambient-drift {
-  0% {
-    background-position: 0% 0%;
-  }
-
-  100% {
-    background-position: 100% 72%;
-  }
+  transform: translateZ(0);
 }
 
 @media (prefers-reduced-motion: reduce) {

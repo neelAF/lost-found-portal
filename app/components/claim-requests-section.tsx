@@ -147,7 +147,9 @@ export function ClaimRequestsSection({
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      void fetchClaims({ silent: true });
+      if (document.visibilityState === "visible") {
+        void fetchClaims({ silent: true });
+      }
     }, 8000);
 
     return () => window.clearInterval(intervalId);

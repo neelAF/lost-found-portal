@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useId } from "react";
+import { memo, useId } from "react";
 
 import type { LostItem, LostItemStatus, LostItemType } from "@/lib/lost-item-shared";
 
@@ -159,7 +159,7 @@ function ResolvedStamp() {
   );
 }
 
-export function ItemCard({
+function ItemCardComponent({
   item,
   showContactNumber = false,
   canResolve = false,
@@ -340,3 +340,5 @@ export function ItemCard({
     </article>
   );
 }
+
+export const ItemCard = memo(ItemCardComponent);

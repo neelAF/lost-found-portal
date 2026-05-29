@@ -163,7 +163,9 @@ export function ChatsSection({ showHeader = true }: ChatsSectionProps) {
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      void fetchChats({ silent: true });
+      if (document.visibilityState === "visible") {
+        void fetchChats({ silent: true });
+      }
     }, 8000);
 
     return () => window.clearInterval(intervalId);

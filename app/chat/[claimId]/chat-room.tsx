@@ -97,8 +97,8 @@ export function ChatRoom() {
       try {
         if (!options?.silent) {
           setIsLoading(true);
+          setError("");
         }
-        setError("");
 
         const response = await fetch(`/api/messages?claimId=${claimId}`, {
           signal: options?.signal,
@@ -146,7 +146,9 @@ export function ChatRoom() {
     }
 
     const intervalId = window.setInterval(() => {
-      void fetchChat({ silent: true });
+      if (document.visibilityState === "visible") {
+        void fetchChat({ silent: true });
+      }
     }, 2500);
 
     return () => window.clearInterval(intervalId);

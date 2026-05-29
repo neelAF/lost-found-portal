@@ -2,9 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { UsersThree } from "@phosphor-icons/react";
+import {
+  Backpack,
+  MapPin,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { Claim } from "@/lib/claim-shared";
 import type { LostItem, LostItemFilter } from "@/lib/lost-item-shared";
@@ -80,6 +85,31 @@ function formatConfirmationTime(value: string) {
   }).format(new Date(value));
 }
 
+function getItemsSnapshot(items: LostItem[]) {
+  return items
+    .map((item) =>
+      [
+        item.id,
+        item.status,
+        item.type,
+        item.title,
+        item.description,
+        item.location,
+        item.contactNumber ?? "",
+        item.image,
+      ].join("\u001f"),
+    )
+    .join("\u001e");
+}
+
+function areItemsEqual(first: LostItem[], second: LostItem[]) {
+  return first.length === second.length && getItemsSnapshot(first) === getItemsSnapshot(second);
+}
+
+function updateItemsIfChanged(currentItems: LostItem[], nextItems: LostItem[]) {
+  return areItemsEqual(currentItems, nextItems) ? currentItems : nextItems;
+}
+
 async function fetchFilteredItems(options?: {
   search?: string;
   type?: LostItemFilter;
@@ -150,8 +180,10 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
 
   useEffect(() => {
     initialItemsRef.current = items;
-    setFilteredItems(items);
-    setTotalReportsCount(items.length);
+    setFilteredItems((currentItems) => updateItemsIfChanged(currentItems, items));
+    setTotalReportsCount((currentCount) =>
+      currentCount === items.length ? currentCount : items.length,
+    );
   }, [items]);
 
   const refreshVisibleItems = useCallback(
@@ -169,10 +201,12 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
 
         if (!search && activeType === "all") {
           initialItemsRef.current = nextItems;
-          setTotalReportsCount(nextItems.length);
+          setTotalReportsCount((currentCount) =>
+            currentCount === nextItems.length ? currentCount : nextItems.length,
+          );
         }
 
-        setFilteredItems(nextItems);
+        setFilteredItems((currentItems) => updateItemsIfChanged(currentItems, nextItems));
       } catch (error) {
         if ((error as Error).name !== "AbortError") {
           if (!options?.silent) {
@@ -198,7 +232,9 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
-      void refreshVisibleItems({ silent: true });
+      if (document.visibilityState === "visible") {
+        void refreshVisibleItems({ silent: true });
+      }
     }, 10000);
 
     return () => window.clearInterval(intervalId);
@@ -242,13 +278,35 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
     return () => window.clearTimeout(timeoutId);
   }, [successConfirmation]);
 
-  const stats = [
-    { label: "Items found", value: `${homeStats.resolvedItemsCount}+`, glow: "stats-glow-blue" },
-    { label: "Students helped", value: `${homeStats.studentsHelpedCount}+`, glow: "stats-glow-emerald" },
-    { label: "Campus locations", value: `${homeStats.campusLocationsCount}+`, glow: "stats-glow-purple" },
-  ];
+  const stats = useMemo(
+    () => [
+      {
+        label: "Items found",
+        value: `${homeStats.resolvedItemsCount}+`,
+        glow: "stats-glow-blue",
+        icon: "backpack",
+      },
+      {
+        label: "Students helped",
+        value: `${homeStats.studentsHelpedCount}+`,
+        glow: "stats-glow-emerald",
+        icon: "users",
+      },
+      {
+        label: "Campus locations",
+        value: `${homeStats.campusLocationsCount}+`,
+        glow: "stats-glow-purple",
+        icon: "map-pin",
+      },
+    ],
+    [
+      homeStats.campusLocationsCount,
+      homeStats.resolvedItemsCount,
+      homeStats.studentsHelpedCount,
+    ],
+  );
 
-  async function handleMarkAsFound(itemId: string) {
+  const handleMarkAsFound = useCallback(async (itemId: string) => {
     if (!currentUser?.email) {
       return;
     }
@@ -281,26 +339,26 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
     } finally {
       setPendingItemId(null);
     }
-  }
+  }, [currentUser?.email, refreshVisibleItems]);
 
-  function handleTypeFilterChange(nextType: LostItemFilter) {
+  const handleTypeFilterChange = useCallback((nextType: LostItemFilter) => {
     setActiveType(nextType);
     setIsFilterDropdownOpen(false);
-  }
+  }, []);
 
-  function openItemResponse(item: LostItem, mode: ItemResponseMode) {
+  const openItemResponse = useCallback((item: LostItem, mode: ItemResponseMode) => {
     setResponseError("");
     setResponseMessage("");
     setSuccessConfirmation(null);
     setResponseItem(item);
     setResponseMode(mode);
-  }
+  }, []);
 
-  function closeItemResponse() {
+  const closeItemResponse = useCallback(() => {
     setResponseItem(null);
     setResponseMessage("");
     setResponseError("");
-  }
+  }, []);
 
   async function handleItemResponseSubmit() {
     if (!responseItem || isSubmittingResponse) {
@@ -732,14 +790,39 @@ export function HomePage({ items, stats: homeStats }: HomePageProps) {
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className={`stats-glow-card ${stat.glow} glass-card rounded-[1.75rem] p-6 shadow-sm transition-all duration-200 ease-out hover:shadow-md dark:hover:shadow-xl`}
+                  className={`stats-glow-card ${stat.glow} group glass-card flex min-h-36 items-center justify-between gap-4 rounded-[1.75rem] p-6 shadow-sm transition-all duration-200 ease-out hover:shadow-md dark:hover:shadow-xl`}
                 >
-                  <p className="text-sm uppercase tracking-[0.25em] text-[var(--text-secondary)]">
-                    {stat.label}
-                  </p>
-                  <p className="mt-3 text-4xl font-semibold text-[var(--text)]">
-                    {stat.value}
-                  </p>
+                  <div className="min-w-0">
+                    <p className="text-sm uppercase tracking-[0.25em] text-[var(--text-secondary)]">
+                      {stat.label}
+                    </p>
+                    <p className="mt-3 text-4xl font-semibold text-[var(--text)]">
+                      {stat.value}
+                    </p>
+                  </div>
+                  {stat.icon === "backpack" ? (
+                    <Backpack
+                      aria-hidden="true"
+                      className="h-9 w-9 shrink-0 text-[#2563EB] transition-transform duration-200 ease-out group-hover:scale-105 sm:h-10 sm:w-10 lg:h-12 lg:w-12"
+                      strokeWidth={2.2}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ) : null}
+                  {stat.icon === "users" ? (
+                    <UsersThree
+                      aria-hidden="true"
+                      className="h-9 w-9 shrink-0 text-[#10B981] transition-transform duration-200 ease-out group-hover:scale-105 sm:h-10 sm:w-10 lg:h-12 lg:w-12"
+                      weight="regular"
+                    />
+                  ) : null}
+                  {stat.icon === "map-pin" ? (
+                    <MapPin
+                      aria-hidden="true"
+                      className="h-9 w-9 shrink-0 text-[#8B5CF6] transition-transform duration-200 ease-out group-hover:scale-105 sm:h-10 sm:w-10 lg:h-12 lg:w-12"
+                      strokeWidth={2.2}
+                      vectorEffect="non-scaling-stroke"
+                    />
+                  ) : null}
                 </div>
               ))}
             </div>
